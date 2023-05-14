@@ -4,13 +4,13 @@ import kinggora.portal.domain.dto.MemberRole;
 import lombok.*;
 
 @Builder
-@Getter
+@Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Member {
 
     private Integer id;
-    private String loginId;
+    private String username;
     private String password;
     private String name;
     private MemberRole role;
