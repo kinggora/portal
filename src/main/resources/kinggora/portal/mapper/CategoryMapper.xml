@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kinggora.portal.mapper.CategoryMapper">
+
+    <select id="findCategories" parameterType="int" resultType="Category">
+        SELECT id, name
+        FROM category
+        WHERE board_id=#{boardId}
+    </select>
+
+</mapper>

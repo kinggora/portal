@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kinggora.portal.mapper.FreeMapper">
+    <resultMap id="FreePost" type="FreePost">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="hit" column="hit"/>
+        <result property="regDate" column="reg_date"/>
+        <result property="modDate" column="mod_date"/>
+        <association property="member" javaType="Member" columnPrefix="m_">
+            <id property="id" column="id"/>
+            <result property="username" column="username"/>
+            <result property="password" column="password"/>
+            <result property="name" column="name"/>
+        </association>
+        <association property="category" javaType="Category" columnPrefix="c_">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+
+    <insert id="savePost" parameterType="PostDto" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO free(
+        member_id
+        , category_id
+        , title
+        , content
+        , reg_date
+        , hit
+        )
+        VALUES(
+        #{memberId}
+        , #{categoryId}
+        , #{title}
+        , #{content}
+        , NOW()
+        , 0
+        )
+    </insert>
+
+    <select id="findPostById" parameterType="int" resultMap="FreePost">
+        SELECT
+        f.id
+        , f.title
+        , f.content
+        , f.reg_date
+        , f.mod_date
+        , f.hit
+        , c.id AS c_id
+        , c.name AS c_name
+        , m.id AS m_id
+        , m.username AS m_username
+        , m.name AS m_name
+        FROM free f, member m, category c
+        WHERE f.id=#{id} and f.member_id=m.id and f.category_id=c.id
+    </select>
+
+    <update id="hitUp" parameterType="int">
+        UPDATE free SET hit=hit+1 WHERE id=#{id}
+    </update>
+
+    <update id="updatePost" parameterType="PostDto">
+        UPDATE free
+        SET title=#{title}, content=#{content}, mod_date=#{modDate}
+        WHERE id=#{id}
+    </update>
+
+    <delete id="deletePost" parameterType="int">
+        UPDATE free SET del_flag=true WHERE id=#{id}
+    </delete>
+</mapper>

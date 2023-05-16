@@ -32,7 +32,7 @@ public class MemberService implements UserDetailsService {
      * @return 등록 회원 id
      */
     public Integer register(Member member) {
-        if(memberRepository.checkDuplicateUsername(member.getUsername())) {
+        if(checkDuplicateUsername(member.getUsername())) {
             throw new RuntimeException("중복된 아이디 입니다.");
         }
         member.setPassword(passwordEncoder.encode(member.getPassword()));
@@ -50,6 +50,15 @@ public class MemberService implements UserDetailsService {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(member.getUsername(), member.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         return jwtTokenProvider.generateToken(authentication);
+    }
+
+    /**
+     * 로그인 아이디 중복 검사
+     * @param username 회원 로그인 id
+     * @return true: 중복O / false: 중복X
+     */
+    public boolean checkDuplicateUsername(String username) {
+        return memberRepository.checkDuplicateUsername(username);
     }
 
     @Override
