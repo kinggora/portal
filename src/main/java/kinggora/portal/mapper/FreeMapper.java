@@ -30,7 +30,7 @@ public interface FreeMapper {
      * 게시글 조회수 1 증가
      * @param id 게시글 id
      */
-    void hitUp(Integer id);
+    int hitUp(Integer id);
 
     /**
      * 게시글 수정
@@ -48,12 +48,12 @@ public interface FreeMapper {
 
     /**
      * 검색 조건에 해당하는 게시글 조회 + 페이징 처리
-     * @param sc 검색 조건
+     * @param criteria 검색 조건
      * @param limit 페이징
      * @param offset 페이징
      * @return 게시글 리스트
      */
-    List<FreePost> findPosts(@Param("criteria") SearchCriteria sc, @Param("limit") int limit, @Param("offset") int offset);
+    List<FreePost> findPosts(@Param("criteria") SearchCriteria criteria, @Param("offset") int offset, @Param("limit") int limit);
 
     /**
      * 검색 조건에 해당하는 게시글 개수 조회

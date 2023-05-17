@@ -45,9 +45,9 @@ class FreeRepositoryTest {
                 .title("제목123")
                 .content("내용123")
                 .build();
-        freeRepository.savePost(post);
+        int id = freeRepository.savePost(post);
 
-        FreePost findPost = freeRepository.findPostById(post.getId()).get();
+        FreePost findPost = freeRepository.findPostById(id).get();
         Assertions.assertThat(findPost.getTitle()).isEqualTo(post.getTitle());
         Assertions.assertThat(findPost.getContent()).isEqualTo(post.getContent());
         Assertions.assertThat(findPost.getMember().getUsername()).isEqualTo("testWriter");
@@ -63,9 +63,9 @@ class FreeRepositoryTest {
                 .title("제목123")
                 .content("내용123")
                 .build();
-        freeRepository.savePost(post);
+        int id = freeRepository.savePost(post);
 
-        freeRepository.hitUp(post.getId());
+        freeRepository.hitUp(id);
         FreePost findPost = freeRepository.findPostById(post.getId()).get();
         Assertions.assertThat(findPost.getHit()).isEqualTo(1);
     }
