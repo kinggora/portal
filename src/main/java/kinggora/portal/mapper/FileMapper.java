@@ -13,7 +13,7 @@ public interface FileMapper {
      * DB에 첨부 파일 정보 저장
      * @param files 파일 정보 리스트
      */
-    void saveFile(List<AttachFile> files);
+    int saveFile(List<AttachFile> files);
 
     /**
      * 파일 정보 단건 조회
@@ -29,4 +29,6 @@ public interface FileMapper {
      * @return 파일 정보 리스트
      */
     List<AttachFile> findFiles(Integer boardId, Integer postId);
+
+    int deleteFiles(Integer boardId, Integer postId);
 }

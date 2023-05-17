@@ -38,4 +38,10 @@
         SELECT * FROM file WHERE board_id=#{boardId} AND post_id=#{postId} AND del_flag=false
     </select>
 
+    <update id="deleteFiles" parameterType="int">
+        UPDATE file
+        SET del_flag=true
+        WHERE board_id=#{boardId} AND post_id=#{postId} AND del_flag=false
+    </update>
+
 </mapper>
