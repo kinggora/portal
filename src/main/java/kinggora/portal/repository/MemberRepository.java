@@ -28,8 +28,8 @@ public class MemberRepository {
      * @param id 회원 id
      * @return 회원
      */
-    public Optional<Member> findById(Integer id) {
-        return mapper.findById(id);
+    public Optional<Member> findMemberById(Integer id) {
+        return mapper.findMemberById(id);
     }
 
     /**
@@ -37,8 +37,8 @@ public class MemberRepository {
      * @param username 회원 로그인 id
      * @return 회원
      */
-    public Optional<Member> findByUsername(String username) {
-        return mapper.findByUsername(username);
+    public Optional<Member> findMemberByUsername(String username) {
+        return mapper.findMemberByUsername(username);
     }
 
     /**

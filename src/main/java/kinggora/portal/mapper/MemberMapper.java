@@ -19,14 +19,14 @@ public interface MemberMapper {
      * @param id 회원 id
      * @return 회원
      */
-    Optional<Member> findById(Integer id);
+    Optional<Member> findMemberById(Integer id);
 
     /**
      * 회원 단건 조회 (username)
      * @param username 회원 로그인 id
      * @return 회원
      */
-    Optional<Member> findByUsername(String username);
+    Optional<Member> findMemberByUsername(String username);
 
     /**
      * 동일한 username 을 가진 회원 존재 여부 확인

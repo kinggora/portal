@@ -18,13 +18,13 @@
         )
     </insert>
 
-    <select id="findById" parameterType="int" resultType="Member">
+    <select id="findMemberById" parameterType="int" resultType="Member">
         SELECT *
         FROM member
         WHERE id=#{id}
     </select>
 
-    <select id="findByUsername" parameterType="String" resultType="Member">
+    <select id="findMemberByUsername" parameterType="String" resultType="Member">
         SELECT *
         FROM member
         WHERE username=#{username}

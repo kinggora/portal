@@ -41,6 +41,26 @@ public class MemberService implements UserDetailsService {
     }
 
     /**
+     * 회원 단건 조회 (id)
+     * @param id 회원 id
+     * @return 회원
+     */
+    public Member findMemberById(Integer id) {
+        return memberRepository.findMemberById(id)
+                .orElseThrow(() -> new RuntimeException("fail MemberService.findMemberById"));
+    }
+
+    /**
+     * 회원 단건 조회 (username)
+     * @param username 회원 로그인 id
+     * @return 회원
+     */
+    public Member findMemberByUsername(String username) {
+        return memberRepository.findMemberByUsername(username)
+                .orElseThrow(() -> new RuntimeException("fail MemberService.findMemberByUsername"));
+    }
+
+    /**
      * 회원 로그인
      * UserDetailsService.loadUserByUsername() 실행하여 회원 검증
      * @param member
@@ -63,7 +83,7 @@ public class MemberService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Member member = memberRepository.findByUsername(username)
+        Member member = memberRepository.findMemberByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
         return new CustomUserDetails(member);
     }
