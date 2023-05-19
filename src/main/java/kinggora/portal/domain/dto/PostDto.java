@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
+@Getter @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,5 +24,4 @@ public class PostDto {
     private LocalDateTime regDate;
     private LocalDateTime modDate;
     private List<MultipartFile> newFiles = new ArrayList<>();
-
 }

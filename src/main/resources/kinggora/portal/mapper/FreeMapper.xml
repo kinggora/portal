@@ -15,6 +15,7 @@
             <result property="username" column="username"/>
             <result property="password" column="password"/>
             <result property="name" column="name"/>
+            <result property="role" column="role"/>
         </association>
         <association property="category" javaType="Category" columnPrefix="c_">
             <id property="id" column="id"/>
@@ -54,6 +55,7 @@
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
+        , m.role AS m_role
         FROM free f, member m, category c
         WHERE f.id=#{id} and f.member_id=m.id and f.category_id=c.id AND del_flag=false
     </select>
@@ -85,6 +87,7 @@
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
+        , m.role AS m_role
         FROM free f, member m, category c
         WHERE f.member_id=m.id and f.category_id=c.id AND del_flag=false
         <if test="criteria.categoryId != null">
