@@ -17,7 +17,7 @@ public interface FreeMapper {
      * @param post 게시글 정보
      * @return 게시글 id
      */
-    int savePost(PostDto post);
+    int savePost(FreePost post);
 
     /**
      * 게시글 단건 조회
@@ -37,7 +37,7 @@ public interface FreeMapper {
      * @param post 수정할 데이터
      * @return 수정된 게시글 개수
      */
-    int updatePost(PostDto post);
+    int updatePost(FreePost post);
 
     /**
      * 게시글 삭제

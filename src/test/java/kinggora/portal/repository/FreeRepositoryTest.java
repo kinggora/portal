@@ -1,5 +1,6 @@
 package kinggora.portal.repository;
 
+import kinggora.portal.domain.Category;
 import kinggora.portal.domain.FreePost;
 import kinggora.portal.domain.Member;
 import kinggora.portal.domain.dto.PostDto;
@@ -39,9 +40,9 @@ class FreeRepositoryTest {
 
     @Test
     void 게시글_저장() {
-        PostDto post = PostDto.builder()
-                .memberId(writerId)
-                .categoryId(1)
+        FreePost post = FreePost.builder()
+                .member(new Member(writerId))
+                .category(new Category(1))
                 .title("제목123")
                 .content("내용123")
                 .build();
@@ -57,9 +58,9 @@ class FreeRepositoryTest {
 
     @Test
     void 조회수_증가() {
-        PostDto post = PostDto.builder()
-                .memberId(writerId)
-                .categoryId(1)
+        FreePost post = FreePost.builder()
+                .member(new Member(writerId))
+                .category(new Category(1))
                 .title("제목123")
                 .content("내용123")
                 .build();

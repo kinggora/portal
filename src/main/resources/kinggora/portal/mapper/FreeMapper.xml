@@ -23,7 +23,7 @@
         </association>
     </resultMap>
 
-    <insert id="savePost" parameterType="PostDto" useGeneratedKeys="true" keyProperty="id">
+    <insert id="savePost" parameterType="FreePost" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO free(
         member_id
         , category_id
@@ -33,8 +33,8 @@
         , hit
         )
         VALUES(
-        #{memberId}
-        , #{categoryId}
+        #{member.id}
+        , #{category.id}
         , #{title}
         , #{content}
         , NOW()

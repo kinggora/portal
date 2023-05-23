@@ -1,6 +1,8 @@
 package kinggora.portal.service;
 
+import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.AttachFile;
+import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.FileRepository;
 import kinggora.portal.util.FileStore;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +40,7 @@ public class FileService {
      */
     public AttachFile findFileById(Integer id) {
         return fileRepository.findFileById(id)
-                .orElseThrow(() -> new RuntimeException("fail FileService.findById"));
+                .orElseThrow(() -> new BizException(ErrorCode.FILE_NOT_FOUND));
     }
 
     /**

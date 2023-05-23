@@ -1,8 +1,10 @@
 package kinggora.portal.service;
 
+import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Member;
 import kinggora.portal.domain.dto.MemberRole;
 import kinggora.portal.domain.dto.TokenInfo;
+import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.MemberRepository;
 import kinggora.portal.security.CustomUserDetails;
 import kinggora.portal.security.JwtTokenProvider;
@@ -33,7 +35,7 @@ public class MemberService implements UserDetailsService {
      */
     public Integer register(Member member) {
         if(checkDuplicateUsername(member.getUsername())) {
-            throw new RuntimeException("중복된 아이디 입니다.");
+            throw new BizException(ErrorCode.DUPLICATE_USERNAME);
         }
         member.setPassword(passwordEncoder.encode(member.getPassword()));
         member.setRole(MemberRole.USER);
@@ -47,7 +49,7 @@ public class MemberService implements UserDetailsService {
      */
     public Member findMemberById(Integer id) {
         return memberRepository.findMemberById(id)
-                .orElseThrow(() -> new RuntimeException("fail MemberService.findMemberById"));
+                .orElseThrow(() -> new BizException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     /**
@@ -57,7 +59,7 @@ public class MemberService implements UserDetailsService {
      */
     public Member findMemberByUsername(String username) {
         return memberRepository.findMemberByUsername(username)
-                .orElseThrow(() -> new RuntimeException("fail MemberService.findMemberByUsername"));
+                .orElseThrow(() -> new BizException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     /**
@@ -82,7 +84,7 @@ public class MemberService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username)  {
         Member member = memberRepository.findMemberByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
         return new CustomUserDetails(member);

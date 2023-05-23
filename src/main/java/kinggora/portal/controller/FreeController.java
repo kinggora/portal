@@ -2,11 +2,13 @@ package kinggora.portal.controller;
 
 
 import kinggora.portal.api.DataResponse;
+import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Category;
 import kinggora.portal.domain.FreePost;
 import kinggora.portal.domain.Member;
 import kinggora.portal.domain.dto.PostDto;
 import kinggora.portal.domain.dto.SearchCriteria;
+import kinggora.portal.exception.BizException;
 import kinggora.portal.service.FreeService;
 import kinggora.portal.service.MemberService;
 import kinggora.portal.util.SecurityUtil;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @Slf4j
@@ -38,7 +41,7 @@ public class FreeController {
     }
 
     @GetMapping("/posts")
-    public DataResponse<List<FreePost>> getPosts(@RequestParam SearchCriteria criteria) {
+    public DataResponse<List<FreePost>> getPosts(SearchCriteria criteria) {
         List<FreePost> posts = freeService.findPosts(criteria);
         return DataResponse.of(posts);
     }
@@ -47,14 +50,14 @@ public class FreeController {
     public DataResponse<Integer> createPost(@RequestBody PostDto dto) {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         dto.setMemberId(member.getId());
-        Integer id = freeService.savePost(dto);
+        Integer id = freeService.savePost(dto.toFreePost());
         return DataResponse.of(id);
     }
 
     @PutMapping("/posts")
     public DataResponse<Void> updatePost(@RequestBody PostDto dto) {
         authorization(dto.getId());
-        freeService.updatePost(dto);
+        freeService.updatePost(dto.toFreePost());
         return DataResponse.empty();
     }
 
@@ -69,7 +72,7 @@ public class FreeController {
         Member writer = freeService.findPostById(postId).getMember();
         Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         if(!writer.getId().equals(signInMember.getId())) {
-            throw new RuntimeException("로그인한 사용자와 작성자가 일치하지 않습니다.");
+            throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
     }
 }

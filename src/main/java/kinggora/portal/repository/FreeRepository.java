@@ -19,11 +19,11 @@ public class FreeRepository {
     private final FreeMapper mapper;
 
     /**
-     *
+     * 게시글 저장
      * @param post
-     * @return
+     * @return 게시글 id
      */
-    public int savePost(PostDto post) {
+    public int savePost(FreePost post) {
        if(mapper.savePost(post) != 1){
            log.error("fail FreeRepository.savePost");
        }
@@ -69,7 +69,7 @@ public class FreeRepository {
      * @param post 수정할 데이터
      * @return 수정된 게시글 개수
      */
-    public void updatePost(PostDto post) {
+    public void updatePost(FreePost post) {
         if(mapper.updatePost(post) != 1) {
             log.error("fail FreeRepository.updatePost");
         }

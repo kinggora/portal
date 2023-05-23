@@ -1,13 +1,14 @@
 package kinggora.portal.service;
 
+import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Category;
 import kinggora.portal.domain.FreePost;
 import kinggora.portal.domain.dto.PostDto;
 import kinggora.portal.domain.dto.SearchCriteria;
+import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.CategoryRepository;
 import kinggora.portal.repository.FreeRepository;
 import kinggora.portal.util.PageManager;
-import kinggora.portal.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,12 +24,11 @@ public class FreeService {
     private final FreeRepository freeRepository;
     private final CategoryRepository categoryRepository;
 
-    public int savePost(PostDto post) {
-
+    public int savePost(FreePost post) {
         return freeRepository.savePost(post);
     }
 
-    public void updatePost(PostDto post) {
+    public void updatePost(FreePost post) {
         freeRepository.updatePost(post);
     }
 
@@ -38,7 +38,7 @@ public class FreeService {
 
     public FreePost findPostById(Integer id) {
         return freeRepository.findPostById(id)
-                .orElseThrow(() -> new RuntimeException("fail FreeService.findPostById"));
+                .orElseThrow(() -> new BizException(ErrorCode.POST_NOT_FOUND));
     }
 
     public List<FreePost> findPosts(SearchCriteria criteria) {

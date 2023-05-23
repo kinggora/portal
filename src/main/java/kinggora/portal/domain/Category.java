@@ -12,4 +12,7 @@ public class Category {
     private Integer id;
     private String name;
 
+    public Category(Integer id) {
+        this.id = id;
+    }
 }

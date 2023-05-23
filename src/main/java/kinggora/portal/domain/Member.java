@@ -15,4 +15,8 @@ public class Member {
     private String name;
     private MemberRole role;
 
+    public Member(Integer id) {
+        this.id = id;
+    }
+
 }

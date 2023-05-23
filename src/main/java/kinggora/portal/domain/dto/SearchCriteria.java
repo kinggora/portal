@@ -1,9 +1,11 @@
 package kinggora.portal.domain.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SearchCriteria {
     private Integer page = 1;
     private Integer categoryId;
