@@ -7,7 +7,7 @@ public class ErrorResponse extends ResponseDto {
     private LocalDateTime timestamp = LocalDateTime.now();
     private List<ErrorField> errors;
     private ErrorResponse(ErrorCode code) {
-        super(code.getCode(), code.getMessage());
+        super(code.getCode(), code.getDefaultMessage());
     }
 
     private ErrorResponse(ErrorCode code, String message) {
@@ -15,7 +15,7 @@ public class ErrorResponse extends ResponseDto {
     }
 
     public ErrorResponse(ErrorCode code, List<ErrorField> errors) {
-        super(code.getCode(), code.getMessage());
+        super(code.getCode(), code.getDefaultMessage());
         this.errors = errors;
     }
 

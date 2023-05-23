@@ -12,17 +12,8 @@ public class DataResponse<T> extends ResponseDto{
         this.data = data;
     }
 
-    private DataResponse(String massage, T data) {
-        super(200, massage);
-        this.data = data;
-    }
-
     public static <T> DataResponse<T> of(T data) {
         return new DataResponse<>(data);
-    }
-
-    public static <T> DataResponse<T> of(String message, T data) {
-        return new DataResponse<>(message, data);
     }
 
     public static <T> DataResponse<T> empty() {
