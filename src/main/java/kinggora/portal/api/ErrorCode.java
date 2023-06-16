@@ -24,9 +24,12 @@ public enum ErrorCode {
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, -421, "로그아웃 된 사용자입니다"),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, -422, "해당 게시글을 찾을 수 없습니다"),
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, -423, "해당 파일을 찾을 수 없습니다"),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, -424, "해당 댓글을 찾을 수 없습니다"),
+    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, -425, "해당 게시판을 찾을 수 없습니다"),
 
     /* 409 CONFLICT : Resource 의 현재 상태와 충돌. 보통 중복된 데이터 존재 */
     DUPLICATE_USERNAME(HttpStatus.CONFLICT, -430, "이미 존재하는 아이디 입니다."),
+    DUPLICATE_PASSWORD(HttpStatus.CONFLICT, -431, "기존 비밀번호와 동일합니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, -500,"내부 서버 오류"),
     DB_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, -600, "데이터베이스 오류");
 
