@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kinggora.portal.mapper.CommentMapper">
+    <resultMap id="Comment" type="Comment">
+        <id property="id" column="id"/>
+        <result property="boardId" column="board_id"/>
+        <result property="postId" column="post_id"/>
+        <result property="content" column="content"/>
+        <result property="ref" column="ref"/>
+        <result property="parent" column="parent"/>
+        <result property="depth" column="depth"/>
+        <result property="regDate" column="reg_date"/>
+        <result property="modDate" column="mod_date"/>
+        <result property="hide" column="hide"/>
+        <association property="member" javaType="Member" columnPrefix="m_">
+            <id property="id" column="id"/>
+            <result property="username" column="username"/>
+            <result property="password" column="password"/>
+            <result property="name" column="name"/>
+            <result property="role" column="role"/>
+        </association>
+    </resultMap>
+
+    <insert id="saveComment" parameterType="Comment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comment(
+        board id
+        , post_id
+        , member_id
+        , content
+        , reg_date
+        , ref
+        , parent
+        , depth
+        ) VALUES (
+        #{boardId}
+        , #{postId}
+        , #{member.id}
+        , #{content}
+        , NOW()
+        , #{ref}
+        , #{parent}
+        , #{depth}
+        )
+    </insert>
+
+    <select id="findCommentById" parameterType="int" resultType="Comment">
+        SELECT
+        c.id
+        , c.board_id
+        , c.post_id
+        , c.content
+        , c.reg_date
+        , c.mod_date
+        , c.ref
+        , c.parent
+        , c.depth
+        , c.hide
+        , m.id AS m_id
+        , m.username AS m_username
+        , m.name AS m_name
+        , m.role AS m_role
+        FROM comment c JOIN member m
+        WHERE c.id=#{id} AND c.member_id=m.id
+    </select>
+
+    <select id="findComments" parameterType="map" resultType="Comment">
+        SELECT
+        c.id
+        , c.board_id
+        , c.post_id
+        , c.content
+        , c.reg_date
+        , c.mod_date
+        , c.ref
+        , c.parent
+        , c.depth
+        , c.hide
+        , m.id AS m_id
+        , m.username AS m_username
+        , m.name AS m_name
+        , m.role AS m_role
+        FROM comment c JOIN member m
+        WHERE c.board_id=#{boardId} AND c.post_id=#{postId} AND c.member_id=m.id ORDER BY ref, reg_date
+    </select>
+
+    <update id="updateComment" parameterType="Comment">
+        UPDATE comment SET content=#{content} WHERE id=#{id} AND mod_date=NOW()
+    </update>
+
+    <delete id="deleteComment" parameterType="int">
+        DELETE FROM comment WHERE id=#{id}
+    </delete>
+
+    <delete id="hideComment" parameterType="int">
+        UPDATE comment SET hide=true WHERE id=#{id} AND hide=false
+    </delete>
+
+    <select id="childExists" parameterType="int" resultType="boolean">
+        SELECT EXISTS (
+        SELECT id
+        FROM comment
+        WHERE parent=#{id}
+        LIMIT 1
+        )
+    </select>
+</mapper>
