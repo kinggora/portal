@@ -1,9 +1,6 @@
 package kinggora.portal.domain.dto;
 
-import kinggora.portal.domain.Category;
-import kinggora.portal.domain.FreePost;
-import kinggora.portal.domain.Member;
-import kinggora.portal.domain.QnaPost;
+import kinggora.portal.domain.*;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +16,7 @@ public class PostDto {
     private Integer id;
     private Integer memberId;
     private Integer categoryId;
+    private Integer boardId;
     private Integer parent;
     private String title;
     private String content;
@@ -48,6 +46,30 @@ public class PostDto {
                 .title(title)
                 .content(content)
                 .parent(parent)
+                .hit(hit)
+                .regDate(regDate)
+                .modDate(modDate)
+                .build();
+    }
+
+    public GalleryPost toGalleryPost() {
+        return GalleryPost.builder()
+                .id(id)
+                .member(new Member(memberId))
+                .title(title)
+                .hit(hit)
+                .regDate(regDate)
+                .modDate(modDate)
+                .build();
+    }
+
+    public LibraryPost toLibraryPost() {
+        return LibraryPost.builder()
+                .id(id)
+                .boardId(boardId)
+                .member(new Member(memberId))
+                .title(title)
+                .content(content)
                 .hit(hit)
                 .regDate(regDate)
                 .modDate(modDate)
