@@ -39,4 +39,12 @@
         )
     </select>
 
+    <update id="updateMember" parameterType="Member">
+        UPDATE member SET name=#{name} WHERE id=#{id}
+    </update>
+
+    <update id="updatePassword" parameterType="Member">
+        UPDATE member SET password=#{password} WHERE id=#{id}
+    </update>
+
 </mapper>

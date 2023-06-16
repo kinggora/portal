@@ -36,9 +36,16 @@ public interface MemberMapper {
     boolean checkDuplicateUsername(String username);
 
     /**
-     * 로그인
-     * @param member 로그인할 회원 정보 (username, password)
-     * @return 로그인 사용자
+     * 회원 정보 수정
+     * @param member 수정할 회원 정보
+     * @return 변경된 row 수
      */
-    Optional<Member> signIn(Member member);
+    int updateMember(Member member);
+
+    /**
+     * 회원 비밀번호 수정
+     * @param member 수정할 회원 정보
+     * @return 변경된 row 수
+     */
+    int updatePassword(Member member);
 }

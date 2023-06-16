@@ -1,8 +1,11 @@
 package kinggora.portal.controller;
 
 import kinggora.portal.api.DataResponse;
+import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Member;
+import kinggora.portal.domain.dto.PasswordDto;
 import kinggora.portal.domain.dto.TokenInfo;
+import kinggora.portal.exception.BizException;
 import kinggora.portal.service.MemberService;
 import kinggora.portal.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,26 @@ public class MemberController {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         member.setPassword(null);
         return DataResponse.of(member);
+    }
+
+    @PutMapping
+    public DataResponse<Void> updateMember(@RequestBody Member member) {
+        Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
+        member.setId(signInMember.getId());
+        memberService.updateMember(member);
+        return DataResponse.empty();
+    }
+
+    @PutMapping("/password")
+    public DataResponse<Void> updatePassword(@RequestBody PasswordDto dto) {
+        Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
+        if(!memberService.checkPassword(dto.getCurrentPassword(), signInMember)) {
+            throw new BizException(ErrorCode.INVALID_PASSWORD);
+        } else if(!memberService.checkPassword(dto.getNewPassword(), signInMember)) {
+            throw new BizException(ErrorCode.DUPLICATE_PASSWORD);
+        }
+        memberService.updatePassword(dto.getNewPassword(), signInMember);
+        return DataResponse.empty();
     }
 
     @PostMapping("/signin")

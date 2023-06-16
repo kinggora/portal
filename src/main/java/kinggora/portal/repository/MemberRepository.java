@@ -3,10 +3,12 @@ package kinggora.portal.repository;
 import kinggora.portal.domain.Member;
 import kinggora.portal.mapper.MemberMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class MemberRepository {
@@ -42,20 +44,27 @@ public class MemberRepository {
     }
 
     /**
+     * 회원 정보 수정
+     * @param member
+     */
+    public void updateMember(Member member) {
+        if(mapper.updateMember(member) != 1) {
+            log.error("fail MemberRepository.updateMember");
+        }
+    }
+
+    public void updatePassword(Member member) {
+        if(mapper.updatePassword(member) != 1) {
+            log.error("fail MemberRepository.updatePassword");
+        }
+    }
+
+    /**
      * 동일한 username 을 가진 회원 존재 여부 확인
      * @param username 회원 로그인 id
      * @return true: 중복O / false: 중복X
      */
     public boolean checkDuplicateUsername(String username) {
         return mapper.checkDuplicateUsername(username);
-    }
-
-    /**
-     * 로그인
-     * @param member 로그인할 회원 정보 (username, password)
-     * @return 로그인 사용자
-     */
-    public Optional<Member> signIn(Member member) {
-        return mapper.signIn(member);
     }
 }

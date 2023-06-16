@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Slf4j
 @SpringBootTest
 @Transactional
@@ -19,8 +21,8 @@ class MemberRepositoryTest {
     @Test
     void 회원등록() {
         Member member = Member.builder()
-                .username("member")
-                .password("password")
+                .username(UUID.randomUUID().toString().substring(0, 8))
+                .password(UUID.randomUUID().toString().substring(0, 8))
                 .name("회원A")
                 .role(MemberRole.USER)
                 .build();

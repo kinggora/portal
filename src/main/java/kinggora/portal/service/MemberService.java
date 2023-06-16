@@ -3,6 +3,7 @@ package kinggora.portal.service;
 import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Member;
 import kinggora.portal.domain.dto.MemberRole;
+import kinggora.portal.domain.dto.PasswordDto;
 import kinggora.portal.domain.dto.TokenInfo;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.MemberRepository;
@@ -75,12 +76,40 @@ public class MemberService implements UserDetailsService {
     }
 
     /**
+     * 회원 정보 수정
+     * @param member 수정할 회원 정보
+     */
+    public void updateMember(Member member) {
+        memberRepository.updateMember(member);
+    }
+
+    /**
+     * 회원 비밀번호 수정
+     * @param password 새 비밀번호 (암호화 전)
+     * @param member 수정할 회원 정보
+     */
+    public void updatePassword(String password, Member member) {
+        member.setPassword(passwordEncoder.encode(password));
+        memberRepository.updatePassword(member);
+    }
+
+    /**
      * 로그인 아이디 중복 검사
      * @param username 회원 로그인 id
      * @return true: 중복O / false: 중복X
      */
     public boolean checkDuplicateUsername(String username) {
         return memberRepository.checkDuplicateUsername(username);
+    }
+
+    /**
+     * 비밀번호 확인
+     * @param password 확인할 비밀번호
+     * @param member 기존 회원 정보
+     * @return true: 비밀번호 일치, false: 비밀번호 미일치
+     */
+    public boolean checkPassword(String password, Member member) {
+        return passwordEncoder.matches(password, member.getPassword());
     }
 
     @Override
