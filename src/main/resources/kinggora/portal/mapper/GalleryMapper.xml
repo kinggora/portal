@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kinggora.portal.mapper.GalleryMapper">
+    <resultMap id="GalleryPost" type="GalleryPost">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="hit" column="hit"/>
+        <result property="regDate" column="reg_date"/>
+        <result property="modDate" column="mod_date"/>
+        <association property="member" javaType="Member" columnPrefix="m_">
+            <id property="id" column="id"/>
+            <result property="username" column="username"/>
+            <result property="password" column="password"/>
+            <result property="name" column="name"/>
+            <result property="role" column="role"/>
+        </association>
+    </resultMap>
+
+    <insert id="savePost" parameterType="GalleryPost" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO gallery(
+        member_id
+        , title
+        , reg_date
+        , hit
+        )
+        VALUES(
+        #{member.id}
+        , #{title}
+        , NOW()
+        , 0
+        )
+    </insert>
+
+    <select id="findPostById" parameterType="int" resultMap="GalleryPost">
+        SELECT
+        g.id
+        , g.title
+        , g.reg_date
+        , g.mod_date
+        , g.hit
+        , m.id AS m_id
+        , m.username AS m_username
+        , m.name AS m_name
+        , m.role AS m_role
+        FROM gallery g, member m
+        WHERE g.id=#{id} and g.member_id=m.id AND g.del_flag=false
+    </select>
+
+    <update id="hitUp" parameterType="int">
+        UPDATE gallery SET hit=hit+1 WHERE id=#{id} AND del_flag=false
+    </update>
+
+    <update id="updatePost" parameterType="GalleryPost">
+        UPDATE gallery
+        SET title=#{title}, mod_date=NOW()
+        WHERE id=#{id} AND del_flag=false
+    </update>
+
+    <delete id="deletePost" parameterType="int">
+        UPDATE gallery SET del_flag=true WHERE id=#{id} AND del_flag=false
+    </delete>
+
+</mapper>
