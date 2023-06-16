@@ -13,6 +13,11 @@ public class CategoryRepository {
 
     private final CategoryMapper mapper;
 
+    /**
+     * 게시판 id에 해당하는 카테고리 반환
+     * @param boardId 게시판 id
+     * @return
+     */
     public ArrayList<Category> findCategories(Integer boardId) {
         return mapper.findCategories(boardId);
     }

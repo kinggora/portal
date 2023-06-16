@@ -27,18 +27,14 @@ public class QnaController {
     private final QnaService qnaService;
     private final MemberService memberService;
 
-    @GetMapping(value = "/category")
-    public DataResponse<List<Category>> category() {
-        List<Category> categories = qnaService.findCategories();
-        return DataResponse.of(categories);
-    }
-
-    @GetMapping("/posts/{id}")
+    @GetMapping("/post/{id}")
     public DataResponse<QnaPost> getPost(@PathVariable int id) {
         Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
+        //관리자의 경우, 질문과 답변 모두 열람 가능
         if(signInMember.getRole().equals(MemberRole.ADMIN)) {
             qnaService.hitUp(id);
-            return DataResponse.of(qnaService.findPostById(id));
+            QnaPost post = qnaService.findPostById(id);
+            return DataResponse.of(post);
         }
         QnaPost post = qnaService.findPostById(id);
         Member writer = post.getMember();
@@ -62,7 +58,7 @@ public class QnaController {
         return DataResponse.of(posts);
     }
 
-    @PostMapping("/posts/q")
+    @PostMapping("/post/q")
     public DataResponse<Integer> createQuestion(@RequestBody PostDto dto) {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         dto.setMemberId(member.getId());
@@ -70,7 +66,7 @@ public class QnaController {
         return DataResponse.of(id);
     }
 
-    @PostMapping("/posts/a")
+    @PostMapping("/post/a")
     public DataResponse<Integer> createAnswer(@RequestBody PostDto dto) {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         if(!member.getRole().equals(MemberRole.ADMIN)) {
@@ -81,20 +77,25 @@ public class QnaController {
         return DataResponse.of(id);
     }
 
-    @PutMapping("/posts")
+    @PutMapping("/post")
     public DataResponse<Void> updatePost(@RequestBody PostDto dto) {
         authorizationWriter(dto.getId());
         qnaService.updateQuestion(dto.toQnaPost());
         return DataResponse.empty();
     }
 
-    @DeleteMapping("/posts/{id}")
+    @DeleteMapping("/post/{id}")
     public DataResponse<Void> deletePost(@PathVariable int id) {
         authorizationWriter(id);
         qnaService.deleteQuestion(id);
         return DataResponse.empty();
     }
 
+    /**
+     * 게시물의 작성자와 현재 로그인 한 사용자가 일치하는지 확인
+     * 일치하지 않으면 UNAUTHORIZED ACCESS 예외 발생
+     * @param postId 게시물 id
+     */
     private void authorizationWriter(Integer postId) {
         Member writer = qnaService.findPostById(postId).getMember();
         Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());

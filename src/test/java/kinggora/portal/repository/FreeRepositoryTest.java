@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,25 +24,24 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 class FreeRepositoryTest {
 
-    @Autowired MemberService memberService;
+    @Autowired MemberRepository memberRepository;
     @Autowired FreeRepository freeRepository;
-    Integer writerId;
+    Member writer;
 
     @BeforeEach
     void registerWriter() {
-        Member writer = Member.builder()
-                .username("testWriter")
-                .password("password")
+        writer = Member.builder()
+                .username(UUID.randomUUID().toString().substring(0, 8))
+                .password(UUID.randomUUID().toString().substring(0, 8))
                 .name("작성자")
                 .build();
-        memberService.register(writer);
-        writerId = writer.getId();
+        memberRepository.saveMember(writer);
     }
 
     @Test
     void 게시글_저장() {
         FreePost post = FreePost.builder()
-                .member(new Member(writerId))
+                .member(writer)
                 .category(new Category(1))
                 .title("제목123")
                 .content("내용123")
@@ -51,7 +51,7 @@ class FreeRepositoryTest {
         FreePost findPost = freeRepository.findPostById(id).get();
         Assertions.assertThat(findPost.getTitle()).isEqualTo(post.getTitle());
         Assertions.assertThat(findPost.getContent()).isEqualTo(post.getContent());
-        Assertions.assertThat(findPost.getMember().getUsername()).isEqualTo("testWriter");
+        Assertions.assertThat(findPost.getMember().getId()).isEqualTo(writer.getId());
         Assertions.assertThat(findPost.getMember().getPassword()).isNull();
         Assertions.assertThat(findPost.getCategory().getName()).isEqualTo("JAVA");
     }
@@ -59,7 +59,7 @@ class FreeRepositoryTest {
     @Test
     void 조회수_증가() {
         FreePost post = FreePost.builder()
-                .member(new Member(writerId))
+                .member(writer)
                 .category(new Category(1))
                 .title("제목123")
                 .content("내용123")

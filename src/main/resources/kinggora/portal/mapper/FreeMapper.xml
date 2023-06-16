@@ -57,7 +57,7 @@
         , m.name AS m_name
         , m.role AS m_role
         FROM free f, member m, category c
-        WHERE f.id=#{id} and f.member_id=m.id and f.category_id=c.id AND del_flag=false
+        WHERE f.id=#{id} and f.member_id=m.id and f.category_id=c.id AND f.del_flag=false
     </select>
 
     <update id="hitUp" parameterType="int">

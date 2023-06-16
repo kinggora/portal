@@ -1,9 +1,7 @@
 package kinggora.portal.controller;
 
-
 import kinggora.portal.api.DataResponse;
 import kinggora.portal.api.ErrorCode;
-import kinggora.portal.domain.Category;
 import kinggora.portal.domain.FreePost;
 import kinggora.portal.domain.Member;
 import kinggora.portal.domain.dto.PostDto;
@@ -16,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 
 @Slf4j
@@ -26,12 +23,6 @@ import java.util.List;
 public class FreeController {
     private final FreeService freeService;
     private final MemberService memberService;
-
-    @GetMapping(value = "/category")
-    public DataResponse<List<Category>> category() {
-        List<Category> categories = freeService.findCategories();
-        return DataResponse.of(categories);
-    }
 
     @GetMapping("/posts/{id}")
     public DataResponse<FreePost> getPost(@PathVariable int id) {
@@ -46,7 +37,7 @@ public class FreeController {
         return DataResponse.of(posts);
     }
 
-    @PostMapping("/posts")
+    @PostMapping("/post")
     public DataResponse<Integer> createPost(@RequestBody PostDto dto) {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         dto.setMemberId(member.getId());
@@ -54,21 +45,26 @@ public class FreeController {
         return DataResponse.of(id);
     }
 
-    @PutMapping("/posts")
+    @PutMapping("/post")
     public DataResponse<Void> updatePost(@RequestBody PostDto dto) {
-        authorization(dto.getId());
+        authorizationWriter(dto.getId());
         freeService.updatePost(dto.toFreePost());
         return DataResponse.empty();
     }
 
-    @DeleteMapping("/posts/{id}")
+    @DeleteMapping("/post/{id}")
     public DataResponse<Void> deletePost(@PathVariable int id) {
-        authorization(id);
+        authorizationWriter(id);
         freeService.deletePost(id);
         return DataResponse.empty();
     }
 
-    private void authorization(Integer postId){
+    /**
+     * 게시물의 작성자와 현재 로그인 한 사용자가 일치하는지 확인
+     * 일치하지 않으면 UNAUTHORIZED ACCESS 예외 발생
+     * @param postId 게시물 id
+     */
+    private void authorizationWriter(Integer postId){
         Member writer = freeService.findPostById(postId).getMember();
         Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         if(!writer.getId().equals(signInMember.getId())) {

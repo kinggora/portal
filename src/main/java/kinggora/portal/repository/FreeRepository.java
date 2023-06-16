@@ -1,7 +1,6 @@
 package kinggora.portal.repository;
 
 import kinggora.portal.domain.FreePost;
-import kinggora.portal.domain.dto.PostDto;
 import kinggora.portal.domain.dto.SearchCriteria;
 import kinggora.portal.mapper.FreeMapper;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +29,11 @@ public class FreeRepository {
         return post.getId();
     }
 
+    /**
+     * 게시글 단건 조회
+     * @param id 게시글 id
+     * @return 게시글 정보
+     */
     public Optional<FreePost> findPostById(Integer id) {
         return mapper.findPostById(id);
     }
@@ -67,7 +71,6 @@ public class FreeRepository {
     /**
      * 게시글 수정
      * @param post 수정할 데이터
-     * @return 수정된 게시글 개수
      */
     public void updatePost(FreePost post) {
         if(mapper.updatePost(post) != 1) {
@@ -78,7 +81,6 @@ public class FreeRepository {
     /**
      * 게시글 삭제
      * @param id 게시글 id
-     * @return 삭제된 게시글 개수
      */
     public void deletePost(Integer id) {
         if(mapper.deletePost(id) != 1) {

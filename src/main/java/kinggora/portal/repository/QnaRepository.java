@@ -19,6 +19,11 @@ public class QnaRepository {
 
     private final QnaMapper mapper;
 
+    /**
+     * 질문 게시글 저장
+     * @param post 게시글 정보
+     * @return 게시글 id
+     */
     public int saveQuestion(QnaPost post) {
         mapper.saveQuestion(post);
         return post.getId();
@@ -43,6 +48,13 @@ public class QnaRepository {
         return mapper.findPostById(id);
     }
 
+    /**
+     * 검색 조건에 해당하는 게시글 조회 + 페이징 처리
+     * @param criteria 검색 조건
+     * @param startRow 페이징 (offset)
+     * @param pageSize 페이징 (limit)
+     * @return 게시글 리스트
+     */
     public List<QnaPost> findPosts(SearchCriteria criteria, int startRow, int pageSize) {
         return mapper.findPosts(criteria, startRow, pageSize);
     }

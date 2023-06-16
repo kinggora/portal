@@ -28,7 +28,7 @@ class QnaRepositoryTest {
     Member admin;
 
     @BeforeEach
-    void init() {
+    void registerWriter() {
         user = Member.builder()
                 .username(UUID.randomUUID().toString().substring(0, 8))
                 .password(UUID.randomUUID().toString().substring(0, 8))
