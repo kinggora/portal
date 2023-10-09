@@ -4,7 +4,7 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kinggora.portal.mapper.BoardInfoMapper">
 
-    <select id="findBoardInfo" parameterType="int" resultType="BoardInfo">
+    <select id="findBoardInfoById" parameterType="int" resultType="BoardInfo">
         SELECT * FROM board_Info WHERE id=#{id}
     </select>
 

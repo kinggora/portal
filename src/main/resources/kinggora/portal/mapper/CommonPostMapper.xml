@@ -2,14 +2,20 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="kinggora.portal.mapper.FreeMapper">
-    <resultMap id="FreePost" type="FreePost">
+<mapper namespace="kinggora.portal.mapper.CommonPostMapper">
+    <resultMap id="CommonPost" type="CommonPost">
         <id property="id" column="id"/>
         <result property="title" column="title"/>
         <result property="content" column="content"/>
         <result property="hit" column="hit"/>
         <result property="regDate" column="reg_date"/>
         <result property="modDate" column="mod_date"/>
+        <association property="boardInfo" javaType="BoardInfo" columnPrefix="bi_">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="subject" column="subject"/>
+            <result property="name" column="name"/>
+        </association>
         <association property="member" javaType="Member" columnPrefix="m_">
             <id property="id" column="id"/>
             <result property="username" column="username"/>
@@ -23,9 +29,10 @@
         </association>
     </resultMap>
 
-    <insert id="savePost" parameterType="FreePost" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO free(
+    <insert id="savePost" parameterType="CommonPost" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO boards(
         member_id
+        , board_id
         , category_id
         , title
         , content
@@ -34,6 +41,7 @@
         )
         VALUES(
         #{member.id}
+        , #{boardInfo.id}
         , #{category.id}
         , #{title}
         , #{content}
@@ -42,81 +50,93 @@
         )
     </insert>
 
-    <select id="findPostById" parameterType="int" resultMap="FreePost">
+    <select id="findPostById" parameterType="int" resultMap="CommonPost">
         SELECT
-        f.id
-        , f.title
-        , f.content
-        , f.reg_date
-        , f.mod_date
-        , f.hit
+        b.id
+        , b.title
+        , b.content
+        , b.reg_date
+        , b.mod_date
+        , b.hit
+        , bi.id AS bi_id
+        , bi.name AS bi_name
+        , bi.subject AS bi_subject
         , c.id AS c_id
         , c.name AS c_name
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
         , m.role AS m_role
-        FROM free f, member m, category c
-        WHERE f.id=#{id} and f.member_id=m.id and f.category_id=c.id AND f.del_flag=false
+        FROM boards b, member m, category c, board_info bi
+        WHERE b.id=#{id} and b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id AND b.del_flag=false
     </select>
 
     <update id="hitUp" parameterType="int">
-        UPDATE free SET hit=hit+1 WHERE id=#{id} AND del_flag=false
+        UPDATE boards SET hit=hit+1 WHERE id=#{id} AND del_flag=false
     </update>
 
-    <update id="updatePost" parameterType="FreePost">
-        UPDATE free
+    <update id="updatePost" parameterType="CommonPost">
+        UPDATE boards
         SET title=#{title}, content=#{content}, mod_date=NOW()
         WHERE id=#{id} AND del_flag=false
     </update>
 
     <delete id="deletePost" parameterType="int">
-        UPDATE free SET del_flag=true WHERE id=#{id} AND del_flag=false
+        UPDATE boards SET del_flag=true WHERE id=#{id} AND del_flag=false
     </delete>
 
-    <select id="findPosts" parameterType="map" resultType="FreePost">
+    <select id="findPosts" parameterType="map" resultType="CommonPost">
         SELECT
-        f.id
-        , f.title
-        , f.content
-        , f.reg_date
-        , f.mod_date
-        , f.hit
+        b.id
+        , b.title
+        , b.content
+        , b.reg_date
+        , b.mod_date
+        , b.hit
+        , bi.id AS bi_id
+        , bi.name AS bi_name
+        , bi.subject AS bi_subject
         , c.id AS c_id
         , c.name AS c_name
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
         , m.role AS m_role
-        FROM free f, member m, category c
-        WHERE f.member_id=m.id and f.category_id=c.id AND del_flag=false
+        FROM boards b, member m, category c, board_info bi
+        WHERE b.id=#{id} and b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id AND b.del_flag=false
+        <if test="criteria.boardId != null">
+            AND b.board_id=#{criteria.boardId}
+        </if>
         <if test="criteria.categoryId != null">
-            AND f.category_id=#{criteria.categoryId}
+            AND b.category_id=#{criteria.categoryId}
         </if>
         <if test="criteria.searchWord != null and criteria.searchWord != ''">
-            AND (f.title LIKE '%${criteria.searchWord}%'
-            OR f.content LIKE '%${criteria.searchWord}%')
+            AND (b.title LIKE '%${criteria.searchWord}%'
+            OR b.content LIKE '%${criteria.searchWord}%')
         </if>
         <if test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate != null and criteria.endDate != '')">
-            AND (f.reg_date BETWEEN #{criteria.startDate} AND #{criteria.endDate})
+            AND (b.reg_date BETWEEN #{criteria.startDate} AND #{criteria.endDate})
         </if>
         <if test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate == null or criteria.endDate == '')">
-            AND f.reg_date &gt;= #{criteria.startDate}
+            AND b.reg_date &gt;= #{criteria.startDate}
         </if>
         <if test="(criteria.startDate == null or criteria.startDate == '') and (criteria.endDate != null and criteria.endDate != '')">
-            AND f.reg_date &lt;= #{criteria.endDate}
+            AND b.reg_date &lt;= #{criteria.endDate}
         </if>
-        ORDER BY f.reg_date DESC
+        ORDER BY b.reg_date DESC
         LIMIT #{offset},#{limit}
     </select>
 
     <select id="getPostCount" parameterType="SearchCriteria" resultType="int">
         SELECT COUNT(id)
-        FROM free
+        FROM boards
         WHERE del_flag=false
         <if test="searchWord != null and searchWord != ''">
             AND (title LIKE '%${searchWord}%'
             OR content LIKE '%${searchWord}%')
+        </if>
+        <if test="boardId != null">
+            AND board_id=#{boardId}
         </if>
         <if test="categoryId != null">
             AND category_id=#{categoryId}

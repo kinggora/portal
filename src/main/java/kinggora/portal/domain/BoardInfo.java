@@ -13,4 +13,8 @@ public class BoardInfo {
     private Integer id;
     private String name;
     private String subject;
+
+    public BoardInfo(int id) {
+        this.id = id;
+    }
 }

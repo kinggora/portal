@@ -1,8 +1,6 @@
 package kinggora.portal.repository;
 
 import kinggora.portal.domain.AttachFile;
-import kinggora.portal.domain.FreePost;
-import kinggora.portal.domain.dto.SearchCriteria;
 import kinggora.portal.mapper.FileMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,16 +18,18 @@ public class FileRepository {
 
     /**
      * DB에 첨부 파일 정보 저장
+     *
      * @param files 파일 정보 리스트
      */
     public void saveFile(List<AttachFile> files) {
-        if(mapper.saveFile(files) != 1){
+        if (mapper.saveFile(files) != 1) {
             log.error("fail FreeRepository.savePost");
         }
     }
 
     /**
      * 파일 정보 단건 조회
+     *
      * @param id 파일 id
      * @return 파일 정보
      */
@@ -40,8 +40,9 @@ public class FileRepository {
 
     /**
      * 해당 게시글에 첨부된 파일 정보 조회
+     *
      * @param boardId 게시판 id
-     * @param postId 게시글 id
+     * @param postId  게시글 id
      * @return 파일 정보 리스트
      */
     public List<AttachFile> findFiles(Integer boardId, Integer postId) {
@@ -50,11 +51,12 @@ public class FileRepository {
 
     /**
      * 해당 게시글에 첨부된 파일 삭제
+     *
      * @param boardId 게시판 id
-     * @param postId 게시글 id
+     * @param postId  게시글 id
      */
     public void deleteFiles(Integer boardId, Integer postId) {
-        if(mapper.deleteFiles(boardId, postId) != 1) {
+        if (mapper.deleteFiles(boardId, postId) != 1) {
             log.error("fail FileRepository.deleteFiles");
         }
     }

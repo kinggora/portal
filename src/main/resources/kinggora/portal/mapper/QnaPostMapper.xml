@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="kinggora.portal.mapper.QnaMapper">
+<mapper namespace="kinggora.portal.mapper.QnaPostMapper">
     <resultMap id="QnaPost" type="QnaPost">
         <id property="id" column="id"/>
         <result property="parent" column="parent"/>
@@ -11,6 +11,12 @@
         <result property="hit" column="hit"/>
         <result property="regDate" column="reg_date"/>
         <result property="modDate" column="mod_date"/>
+        <association property="boardInfo" javaType="BoardInfo" columnPrefix="bi_">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="subject" column="subject"/>
+            <result property="name" column="name"/>
+        </association>
         <association property="member" javaType="Member" columnPrefix="m_">
             <id property="id" column="id"/>
             <result property="username" column="username"/>
@@ -27,6 +33,7 @@
     <insert id="saveQuestion" parameterType="QnaPost" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO qna(
         member_id
+        , board_id
         , category_id
         , title
         , content
@@ -35,6 +42,7 @@
         )
         VALUES(
         #{member.id}
+        , #{boardInfo.id}
         , #{category.id}
         , #{title}
         , #{content}
@@ -46,6 +54,7 @@
     <insert id="saveAnswer" parameterType="QnaPost" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO qna(
         member_id
+        , board_id
         , category_id
         , parent
         , title
@@ -55,6 +64,7 @@
         )
         VALUES(
         #{member.id}
+        , #{boardInfo.id}
         , #{category.id}
         , #{parent}
         , #{title}
@@ -73,14 +83,17 @@
         , q.reg_date
         , q.mod_date
         , q.hit
+        , bi.id AS bi_id
+        , bi.name AS bi_name
+        , bi.subject AS bi_subject
         , c.id AS c_id
         , c.name AS c_name
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
         , m.role AS m_role
-        FROM qna q, member m, category c
-        WHERE q.id=#{id} and q.member_id=m.id and q.category_id=c.id AND del_flag=false
+        FROM qna q, member m, category c, board_info bi
+        WHERE q.id=#{id} and q.member_id=m.id and q.category_id=c.id q.board_id=bi.id AND del_flag=false
     </select>
 
     <select id="findPosts" resultMap="QnaPost">
@@ -92,25 +105,28 @@
         , q.reg_date
         , q.mod_date
         , q.hit
+        , bi.id AS bi_id
+        , bi.name AS bi_name
+        , bi.subject AS bi_subject
         , c.id AS c_id
         , c.name AS c_name
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
         , m.role AS m_role
-        FROM member m, category c, (
-            SELECT a.id, a.member_id, a.category_id, a.parent, a.title, a.content, a.reg_date, a.mod_date, a.hit
-            FROM qna a
-                LEFT OUTER JOIN (
-                    SELECT * FROM qna
-                    WHERE parent IS NULL AND del_flag=FALSE
-                    ORDER BY reg_date DESC
-                    LIMIT #{offset},#{limit}
-                ) q
-                ON a.PARENT = q.id
-            WHERE a.DEL_FLAG=false
+        FROM member m, category c, board_info bi, (
+        SELECT a.id, a.member_id, a.board_id, a.category_id, a.parent, a.title, a.content, a.reg_date, a.mod_date, a.hit
+        FROM qna a
+        LEFT OUTER JOIN (
+        SELECT * FROM qna
+        WHERE parent IS NULL AND del_flag=FALSE
+        ORDER BY reg_date DESC
+        LIMIT #{offset},#{limit}
         ) q
-        WHERE q.member_id=m.id and q.category_id=c.id
+        ON a.parent = q.id
+        WHERE a.del_flag=false
+        ) q
+        WHERE q.member_id=m.id and q.category_id=c.id and q.board_id=bi.id
     </select>
 
     <update id="hitUp" parameterType="int">

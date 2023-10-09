@@ -1,21 +1,16 @@
 package kinggora.portal.domain;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
-
-@Getter @Builder
+@Getter
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class QnaPost {
+public class QnaPost extends CommonPost {
 
-    private Integer id;
-    private Member member;
-    private Category category;
     private Integer parent;
-    private String title;
-    private String content;
-    private int hit;
-    private LocalDateTime regDate;
-    private LocalDateTime modDate;
 }

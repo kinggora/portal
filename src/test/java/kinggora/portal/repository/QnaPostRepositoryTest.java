@@ -12,16 +12,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
 @SpringBootTest
 @Transactional
-class QnaRepositoryTest {
+class QnaPostRepositoryTest {
 
     @Autowired
-    QnaRepository qnaRepository;
+    QnaPostRepository qnaPostRepository;
     @Autowired
     MemberRepository memberRepository;
     Member user;
@@ -32,14 +31,14 @@ class QnaRepositoryTest {
         user = Member.builder()
                 .username(UUID.randomUUID().toString().substring(0, 8))
                 .password(UUID.randomUUID().toString().substring(0, 8))
-                .name("질문자")
+                .name(UUID.randomUUID().toString().substring(0, 5))
                 .role(MemberRole.USER)
                 .build();
         memberRepository.saveMember(user);
         admin = Member.builder()
                 .username(UUID.randomUUID().toString().substring(0, 8))
                 .password(UUID.randomUUID().toString().substring(0, 8))
-                .name("답변자")
+                .name(UUID.randomUUID().toString().substring(0, 5))
                 .role(MemberRole.ADMIN)
                 .build();
         memberRepository.saveMember(admin);
@@ -51,21 +50,21 @@ class QnaRepositoryTest {
         QnaPost question = QnaPost.builder()
                 .member(user)
                 .category(category)
-                .title("test question")
-                .content("질문입니다.")
+                .title("test title")
+                .content("test content")
                 .build();
-        int questionId = qnaRepository.saveQuestion(question);
+        int questionId = qnaPostRepository.saveQuestion(question);
         QnaPost answer = QnaPost.builder()
                 .member(admin)
                 .category(category)
                 .parent(questionId)
-                .title("test answer")
-                .content("답변입니다.")
+                .title("test title")
+                .content("test content")
                 .build();
-        int answerId = qnaRepository.saveAnswer(answer);
+        int answerId = qnaPostRepository.saveAnswer(answer);
 
-        QnaPost findQuestion = qnaRepository.findPostById(questionId).get();
-        QnaPost findAnswer = qnaRepository.findPostById(answerId).get();
+        QnaPost findQuestion = qnaPostRepository.findPostById(questionId).get();
+        QnaPost findAnswer = qnaPostRepository.findPostById(answerId).get();
 
         Assertions.assertThat(findQuestion.getMember().getRole()).isEqualTo(MemberRole.USER);
         Assertions.assertThat(findQuestion.getCategory().getId()).isEqualTo(question.getCategory().getId());

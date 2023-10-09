@@ -1,10 +1,8 @@
 package kinggora.portal.repository;
 
-import kinggora.portal.domain.FreePost;
 import kinggora.portal.domain.QnaPost;
-import kinggora.portal.domain.dto.PostDto;
 import kinggora.portal.domain.dto.SearchCriteria;
-import kinggora.portal.mapper.QnaMapper;
+import kinggora.portal.mapper.QnaPostMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -15,12 +13,13 @@ import java.util.Optional;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class QnaRepository {
+public class QnaPostRepository {
 
-    private final QnaMapper mapper;
+    private final QnaPostMapper mapper;
 
     /**
      * 질문 게시글 저장
+     *
      * @param post 게시글 정보
      * @return 게시글 id
      */
@@ -31,6 +30,7 @@ public class QnaRepository {
 
     /**
      * 답변 게시글 저장
+     *
      * @param post 게시글 정보
      * @return 게시글 id
      */
@@ -41,6 +41,7 @@ public class QnaRepository {
 
     /**
      * 게시글 단건 조회
+     *
      * @param id 게시글 id
      * @return 게시글 정보
      */
@@ -50,6 +51,7 @@ public class QnaRepository {
 
     /**
      * 검색 조건에 해당하는 게시글 조회 + 페이징 처리
+     *
      * @param criteria 검색 조건
      * @param startRow 페이징 (offset)
      * @param pageSize 페이징 (limit)
@@ -61,36 +63,40 @@ public class QnaRepository {
 
     /**
      * 게시글 조회수 1 증가
+     *
      * @param id 게시글 id
      */
     public void hitUp(Integer id) {
-        if(mapper.hitUp(id) != 1) {
+        if (mapper.hitUp(id) != 1) {
             log.error("fail QnaRepository.hitUp");
         }
     }
 
     /**
      * 게시글 수정
+     *
      * @param post 수정할 데이터
      */
     public void updatePost(QnaPost post) {
-        if(mapper.updatePost(post) != 1) {
+        if (mapper.updatePost(post) != 1) {
             log.error("fail QnaRepository.updatePost");
         }
     }
 
     /**
      * 게시글 삭제
+     *
      * @param id 게시글 id
      */
     public void deletePost(Integer id) {
-        if(mapper.deletePost(id) != 1) {
+        if (mapper.deletePost(id) != 1) {
             log.error("fail QnaRepository.deletePost");
         }
     }
 
     /**
      * 답변 존재 여부
+     *
      * @param id 게시글 id
      * @return 해당 게시글을 parent 로 하는 게시글 존재 여부
      */

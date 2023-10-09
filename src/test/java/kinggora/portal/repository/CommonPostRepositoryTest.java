@@ -1,7 +1,8 @@
 package kinggora.portal.repository;
 
+import kinggora.portal.domain.BoardInfo;
 import kinggora.portal.domain.Category;
-import kinggora.portal.domain.LibraryPost;
+import kinggora.portal.domain.CommonPost;
 import kinggora.portal.domain.Member;
 import kinggora.portal.domain.dto.MemberRole;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +18,12 @@ import java.util.UUID;
 @Slf4j
 @SpringBootTest
 @Transactional
-class LibraryRepositoryTest {
+class CommonPostRepositoryTest {
 
     @Autowired
-    LibraryRepository libraryRepository;
-    @Autowired MemberRepository memberRepository;
+    MemberRepository memberRepository;
+    @Autowired
+    CommonPostRepository commonPostRepository;
     Member writer;
 
     @BeforeEach
@@ -29,43 +31,45 @@ class LibraryRepositoryTest {
         writer = Member.builder()
                 .username(UUID.randomUUID().toString().substring(0, 8))
                 .password(UUID.randomUUID().toString().substring(0, 8))
-                .name("관리자")
-                .role(MemberRole.ADMIN)
+                .name(UUID.randomUUID().toString().substring(0, 5))
+                .role(MemberRole.USER)
                 .build();
         memberRepository.saveMember(writer);
     }
 
     @Test
     void 게시글_저장() {
-        LibraryPost post = LibraryPost.builder()
-                .boardId(1)
+        CommonPost post = CommonPost.builder()
                 .member(writer)
-                .title("공지")
-                .content("공지입니다")
+                .boardInfo(new BoardInfo(4))
+                .category(new Category(1))
+                .title("test title")
+                .content("test content")
                 .build();
-        int id = libraryRepository.savePost(post);
+        int id = commonPostRepository.savePost(post);
 
-        LibraryPost findPost = libraryRepository.findPostById(id).get();
+        CommonPost findPost = commonPostRepository.findPostById(id).get();
         Assertions.assertThat(findPost.getTitle()).isEqualTo(post.getTitle());
-        Assertions.assertThat(findPost.getBoardId()).isEqualTo(post.getBoardId());
+        Assertions.assertThat(findPost.getContent()).isEqualTo(post.getContent());
         Assertions.assertThat(findPost.getMember().getId()).isEqualTo(writer.getId());
-        Assertions.assertThat(findPost.getMember().getRole()).isEqualTo(writer.getRole());
         Assertions.assertThat(findPost.getMember().getPassword()).isNull();
+        Assertions.assertThat(findPost.getBoardInfo().getName()).isEqualTo("free");
+        Assertions.assertThat(findPost.getCategory().getName()).isEqualTo("JAVA");
     }
 
     @Test
     void 조회수_증가() {
-        LibraryPost post = LibraryPost.builder()
-                .boardId(2)
+        CommonPost post = CommonPost.builder()
                 .member(writer)
-                .title("뉴스")
-                .content("뉴스입니다")
+                .boardInfo(new BoardInfo(4))
+                .category(new Category(1))
+                .title("test title")
+                .content("test content")
                 .build();
-        int id = libraryRepository.savePost(post);
+        int id = commonPostRepository.savePost(post);
 
-        libraryRepository.hitUp(id);
-        LibraryPost findPost = libraryRepository.findPostById(post.getId()).get();
+        commonPostRepository.hitUp(id);
+        CommonPost findPost = commonPostRepository.findPostById(post.getId()).get();
         Assertions.assertThat(findPost.getHit()).isEqualTo(1);
     }
-
 }

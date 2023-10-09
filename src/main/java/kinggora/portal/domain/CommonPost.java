@@ -1,16 +1,23 @@
 package kinggora.portal.domain;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
-@Getter @Builder
+@Getter
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class LibraryPost {
+public class CommonPost {
+
     private Integer id;
-    private Integer boardId;
+    private BoardInfo boardInfo;
     private Member member;
+    private Category category;
     private String title;
     private String content;
     private int hit;
