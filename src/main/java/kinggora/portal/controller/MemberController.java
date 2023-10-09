@@ -21,7 +21,7 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping
-    public DataResponse<Void> createMember(@RequestBody Member member) {
+    public DataResponse<Void> createMember(Member member) {
         memberService.register(member);
         return DataResponse.empty();
     }
@@ -30,11 +30,12 @@ public class MemberController {
     public DataResponse<Member> getMember() {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         member.setPassword(null);
+        log.info("loginMember={}", member.getUsername());
         return DataResponse.of(member);
     }
 
     @PutMapping
-    public DataResponse<Void> updateMember(@RequestBody Member member) {
+    public DataResponse<Void> updateMember(Member member) {
         Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         member.setId(signInMember.getId());
         memberService.updateMember(member);
@@ -42,11 +43,11 @@ public class MemberController {
     }
 
     @PutMapping("/password")
-    public DataResponse<Void> updatePassword(@RequestBody PasswordDto dto) {
+    public DataResponse<Void> updatePassword(PasswordDto dto) {
         Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
-        if(!memberService.checkPassword(dto.getCurrentPassword(), signInMember)) {
+        if (!memberService.checkPassword(dto.getCurrentPassword(), signInMember)) {
             throw new BizException(ErrorCode.INVALID_PASSWORD);
-        } else if(!memberService.checkPassword(dto.getNewPassword(), signInMember)) {
+        } else if (!memberService.checkPassword(dto.getNewPassword(), signInMember)) {
             throw new BizException(ErrorCode.DUPLICATE_PASSWORD);
         }
         memberService.updatePassword(dto.getNewPassword(), signInMember);
@@ -54,9 +55,9 @@ public class MemberController {
     }
 
     @PostMapping("/signin")
-    public TokenInfo signIn(@RequestBody Member member) {
+    public DataResponse<TokenInfo> signIn(Member member) {
         TokenInfo tokenInfo = memberService.signIn(member);
         log.info("access token={}", tokenInfo.getAccessToken());
-        return tokenInfo;
+        return DataResponse.of(tokenInfo);
     }
 }

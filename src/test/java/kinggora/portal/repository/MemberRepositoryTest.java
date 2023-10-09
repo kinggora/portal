@@ -16,14 +16,15 @@ import java.util.UUID;
 @Transactional
 class MemberRepositoryTest {
 
-    @Autowired MemberRepository repository;
+    @Autowired
+    MemberRepository repository;
 
     @Test
     void 회원등록() {
         Member member = Member.builder()
                 .username(UUID.randomUUID().toString().substring(0, 8))
                 .password(UUID.randomUUID().toString().substring(0, 8))
-                .name("회원A")
+                .name(UUID.randomUUID().toString().substring(0, 5))
                 .role(MemberRole.USER)
                 .build();
         Integer id = repository.saveMember(member);
