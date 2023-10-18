@@ -1,15 +1,9 @@
 package kinggora.portal.domain.dto;
 
-import kinggora.portal.domain.Category;
-import kinggora.portal.domain.CommonPost;
-import kinggora.portal.domain.Member;
-import kinggora.portal.domain.QnaPost;
+import kinggora.portal.domain.*;
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -27,12 +21,11 @@ public class PostDto {
     private int hit = 0;
     private LocalDateTime regDate;
     private LocalDateTime modDate;
-    private boolean isAttached;
-    private List<MultipartFile> newFiles = new ArrayList<>();
 
     public CommonPost toCommonPost() {
         return CommonPost.builder()
                 .id(id)
+                .boardInfo(new BoardInfo(boardId))
                 .member(new Member(memberId))
                 .category(new Category(categoryId))
                 .title(title)

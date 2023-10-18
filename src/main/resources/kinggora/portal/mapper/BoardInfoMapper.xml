@@ -8,6 +8,10 @@
         SELECT * FROM board_Info WHERE id=#{id}
     </select>
 
+    <select id="findBoardInfoByName" parameterType="String" resultType="BoardInfo">
+        SELECT * FROM board_Info WHERE name=#{name}
+    </select>
+
     <select id="findBoardInfo" resultType="BoardInfo">
         SELECT * FROM board_Info
     </select>

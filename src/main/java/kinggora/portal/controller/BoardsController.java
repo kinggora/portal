@@ -23,23 +23,27 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("boards")
 public class BoardsController {
     private final CommonPostService commonPostService;
     private final MemberService memberService;
-
     private final BoardInfoService boardInfoService;
     private final CategoryService categoryService;
 
     @GetMapping("/info")
     public DataResponse<List<BoardInfo>> boardInfo() {
+        log.info("boardInfo");
         List<BoardInfo> boardInfo = boardInfoService.findBoardInfo();
         return DataResponse.of(boardInfo);
     }
 
-    @GetMapping("/info/{id}")
     public DataResponse<BoardInfo> boardInfoById(@PathVariable Integer id) {
         BoardInfo boardInfo = boardInfoService.findBoardInfoById(id);
+        return DataResponse.of(boardInfo);
+    }
+
+    @GetMapping("/info/{name}")
+    public DataResponse<BoardInfo> boardInfoById(@PathVariable String name) {
+        BoardInfo boardInfo = boardInfoService.findBoardInfoByName(name);
         return DataResponse.of(boardInfo);
     }
 
@@ -50,14 +54,16 @@ public class BoardsController {
     }
 
     @GetMapping("/post/{id}")
-    public DataResponse<CommonPost> getPost(@PathVariable int id) {
+    public DataResponse<CommonPost> getPost(@PathVariable Integer id) {
         commonPostService.hitUp(id);
         CommonPost post = commonPostService.findPostById(id);
+        log.info("post={}", post);
         return DataResponse.of(post);
     }
 
     @GetMapping("/posts")
     public DataResponse<List<CommonPost>> getPosts(SearchCriteria criteria) {
+        log.info("getPosts()={}", criteria);
         List<CommonPost> posts = commonPostService.findPosts(criteria);
         return DataResponse.of(posts);
     }

@@ -10,6 +10,10 @@ import java.util.Optional;
 public interface BoardInfoMapper {
 
     Optional<BoardInfo> findBoardInfoById(Integer id);
+
+    Optional<BoardInfo> findBoardInfoByName(String name);
+
     List<BoardInfo> findBoardInfo();
+
     Integer saveBoardInfo(BoardInfo boardInfo);
 }

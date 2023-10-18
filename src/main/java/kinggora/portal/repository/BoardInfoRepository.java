@@ -17,9 +17,15 @@ public class BoardInfoRepository {
     public Optional<BoardInfo> findBoardInfoById(Integer id) {
         return mapper.findBoardInfoById(id);
     }
+
+    public Optional<BoardInfo> findBoardInfoByName(String name) {
+        return mapper.findBoardInfoByName(name);
+    }
+
     public List<BoardInfo> findBoardInfo() {
         return mapper.findBoardInfo();
     }
+
     public Integer saveBoardInfo(BoardInfo boardInfo) {
         mapper.saveBoardInfo(boardInfo);
         return boardInfo.getId();
