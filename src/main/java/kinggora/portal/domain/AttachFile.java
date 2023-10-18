@@ -9,7 +9,6 @@ import lombok.*;
 public class AttachFile {
 
     private Integer id;
-    private Integer boardId;
     private Integer postId;
     private String origName;
     private String storeDir;
