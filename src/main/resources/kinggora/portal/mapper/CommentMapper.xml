@@ -5,15 +5,15 @@
 <mapper namespace="kinggora.portal.mapper.CommentMapper">
     <resultMap id="Comment" type="Comment">
         <id property="id" column="id"/>
-        <result property="boardId" column="board_id"/>
         <result property="postId" column="post_id"/>
         <result property="content" column="content"/>
         <result property="ref" column="ref"/>
+        <result property="refOrder" column="ref_order"/>
         <result property="parent" column="parent"/>
         <result property="depth" column="depth"/>
         <result property="regDate" column="reg_date"/>
         <result property="modDate" column="mod_date"/>
-        <result property="hide" column="hide"/>
+        <result property="delFlag" column="del_flag"/>
         <association property="member" javaType="Member" columnPrefix="m_">
             <id property="id" column="id"/>
             <result property="username" column="username"/>
@@ -25,38 +25,49 @@
 
     <insert id="saveComment" parameterType="Comment" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO comment(
-        board id
-        , post_id
+        post_id
         , member_id
         , content
         , reg_date
-        , ref
         , parent
         , depth
+        , ref
+        , ref_order
+        , del_flag
         ) VALUES (
-        #{boardId}
-        , #{postId}
+        #{postId}
         , #{member.id}
         , #{content}
-        , NOW()
-        , #{ref}
+        , #{regDate}
         , #{parent}
         , #{depth}
+        , #{ref}
+        , #{refOrder}
+        , #{delFlag}
         )
     </insert>
 
-    <select id="findCommentById" parameterType="int" resultType="Comment">
+    <select id="findMaxRef" resultType="int">
+        SELECT IFNULL(MAX(ref), 0) FROM comment
+    </select>
+
+    <update id="updateRefOrder" parameterType="map">
+        UPDATE comment
+        SET ref_order = ref_order + 1
+        WHERE ref=#{ref} AND (ref_order > #{refOrder} OR ref_order = #{refOrder})
+    </update>
+
+    <select id="findCommentById" parameterType="int" resultMap="Comment">
         SELECT
         c.id
-        , c.board_id
         , c.post_id
         , c.content
         , c.reg_date
-        , c.mod_date
-        , c.ref
         , c.parent
         , c.depth
-        , c.hide
+        , c.ref
+        , c.ref_order
+        , c.del_flag
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
@@ -65,37 +76,47 @@
         WHERE c.id=#{id} AND c.member_id=m.id
     </select>
 
-    <select id="findComments" parameterType="map" resultType="Comment">
+    <select id="findComments" parameterType="map" resultMap="Comment">
         SELECT
         c.id
-        , c.board_id
         , c.post_id
         , c.content
         , c.reg_date
-        , c.mod_date
-        , c.ref
         , c.parent
         , c.depth
-        , c.hide
+        , c.ref
+        , c.ref_order
+        , c.del_flag
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
         , m.role AS m_role
         FROM comment c JOIN member m
-        WHERE c.board_id=#{boardId} AND c.post_id=#{postId} AND c.member_id=m.id ORDER BY ref, reg_date
+        WHERE c.post_id=#{postId} AND c.member_id=m.id
+        ORDER BY ref, ref_order
     </select>
 
     <update id="updateComment" parameterType="Comment">
-        UPDATE comment SET content=#{content} WHERE id=#{id} AND mod_date=NOW()
+        UPDATE comment
+        SET content=#{content}, mod_date=NOW()
+        WHERE id=#{id}
     </update>
 
-    <delete id="deleteComment" parameterType="int">
-        DELETE FROM comment WHERE id=#{id}
-    </delete>
+    <update id="hideCommentById" parameterType="int">
+        UPDATE comment
+        SET del_flag=true, mod_date=NOW()
+        WHERE id=#{id}
+    </update>
 
-    <delete id="hideComment" parameterType="int">
-        UPDATE comment SET hide=true WHERE id=#{id} AND hide=false
-    </delete>
+    <update id="hideComments" parameterType="int">
+        UPDATE comment
+        SET del_flag=true, mod_date=NOW()
+        WHERE post_id=#{postId}
+    </update>
+
+    <update id="deleteComment" parameterType="int">
+        DELETE comment WHERE id=#{id}
+    </update>
 
     <select id="childExists" parameterType="int" resultType="boolean">
         SELECT EXISTS (
@@ -105,4 +126,25 @@
         LIMIT 1
         )
     </select>
+
+    <select id="isOnlyMinimumDepth" parameterType="Comment" resultType="boolean">
+        SELECT NOT EXISTS (
+        SELECT id
+        FROM comment
+        WHERE ref=#{ref} AND ref_order > #{refOrder} AND (depth = #{depth} OR #{depth} > depth)
+        )
+    </select>
+
+    <select id="findMaxRefOrder" parameterType="int" resultType="int">
+        SELECT MAX(ref_order) FROM comment WHERE ref=#{ref}
+    </select>
+
+    <select id="findRefOrderOfChild" parameterType="Comment" resultType="int">
+        SELECT ref_order
+        FROM comment
+        WHERE ref=#{ref} AND ref_order > #{refOrder} AND (depth = #{depth} OR #{depth} > depth)
+        ORDER BY ref_order
+        LIMIT 1
+    </select>
+
 </mapper>
