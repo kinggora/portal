@@ -10,6 +10,8 @@
         <result property="hit" column="hit"/>
         <result property="regDate" column="reg_date"/>
         <result property="modDate" column="mod_date"/>
+        <result property="attached" column="attached"/>
+        <result property="imaged" column="imaged"/>
         <association property="boardInfo" javaType="BoardInfo" columnPrefix="bi_">
             <id property="id" column="id"/>
             <result property="name" column="name"/>
@@ -82,10 +84,12 @@
     </update>
 
     <delete id="deletePost" parameterType="int">
-        UPDATE boards SET del_flag=true WHERE id=#{id} AND del_flag=false
+        UPDATE boards
+        SET del_flag=true, mod_date=NOW()
+        WHERE id=#{id} AND del_flag=false
     </delete>
 
-    <select id="findPosts" parameterType="map" resultType="CommonPost">
+    <select id="findPosts" parameterType="map" resultMap="CommonPost">
         SELECT
         b.id
         , b.title
@@ -102,8 +106,13 @@
         , m.username AS m_username
         , m.name AS m_name
         , m.role AS m_role
+        , (SELECT EXISTS (SELECT id FROM file f WHERE b.id=f.post_id AND f.del_flag=false AND f.type='A' LIMIT 1)) AS
+        attached
+        , (SELECT EXISTS (SELECT id FROM file f WHERE b.id=f.post_id AND f.del_flag=false AND f.type='C' LIMIT 1)) AS
+        imaged
         FROM boards b, member m, category c, board_info bi
-        WHERE b.id=#{id} and b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id AND b.del_flag=false
+        WHERE b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id AND
+        b.del_flag=false
         <if test="criteria.boardId != null">
             AND b.board_id=#{criteria.boardId}
         </if>
@@ -114,32 +123,34 @@
             AND (b.title LIKE '%${criteria.searchWord}%'
             OR b.content LIKE '%${criteria.searchWord}%')
         </if>
-        <if test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate != null and criteria.endDate != '')">
-            AND (b.reg_date BETWEEN #{criteria.startDate} AND #{criteria.endDate})
-        </if>
-        <if test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate == null or criteria.endDate == '')">
-            AND b.reg_date &gt;= #{criteria.startDate}
-        </if>
-        <if test="(criteria.startDate == null or criteria.startDate == '') and (criteria.endDate != null and criteria.endDate != '')">
-            AND b.reg_date &lt;= #{criteria.endDate}
-        </if>
+        <choose>
+            <when test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate != null and criteria.endDate != '')">
+                AND (b.reg_date BETWEEN #{criteria.startDate} AND #{criteria.endDate})
+            </when>
+            <when test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate == null or criteria.endDate == '')">
+                AND b.reg_date &gt;= #{criteria.startDate}
+            </when>
+            <when test="(criteria.startDate == null or criteria.startDate == '') and (criteria.endDate != null and criteria.endDate != '')">
+                AND b.reg_date &lt;= #{criteria.endDate}
+            </when>
+        </choose>
         ORDER BY b.reg_date DESC
         LIMIT #{offset},#{limit}
     </select>
 
-    <select id="getPostCount" parameterType="SearchCriteria" resultType="int">
+    <select id="findPostsCount" parameterType="SearchCriteria" resultType="int">
         SELECT COUNT(id)
         FROM boards
         WHERE del_flag=false
-        <if test="searchWord != null and searchWord != ''">
-            AND (title LIKE '%${searchWord}%'
-            OR content LIKE '%${searchWord}%')
-        </if>
         <if test="boardId != null">
             AND board_id=#{boardId}
         </if>
         <if test="categoryId != null">
             AND category_id=#{categoryId}
+        </if>
+        <if test="searchWord != null and searchWord != ''">
+            AND (title LIKE '%${searchWord}%'
+            OR content LIKE '%${searchWord}%')
         </if>
         <choose>
             <when test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">

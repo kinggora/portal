@@ -66,5 +66,5 @@ public interface CommonPostMapper {
      * @param sc 검색 조건
      * @return 게시글 개수
      */
-    int getPostCount(SearchCriteria sc);
+    int findPostsCount(SearchCriteria sc);
 }

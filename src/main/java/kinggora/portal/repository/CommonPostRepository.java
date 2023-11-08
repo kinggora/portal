@@ -58,8 +58,8 @@ public class CommonPostRepository {
      * @param criteria 검색 조건
      * @return 게시글 개수
      */
-    public int getPostCount(SearchCriteria criteria) {
-        return mapper.getPostCount(criteria);
+    public int findPostsCount(SearchCriteria criteria) {
+        return mapper.findPostsCount(criteria);
     }
 
     /**

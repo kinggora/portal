@@ -2,11 +2,10 @@ package kinggora.portal.service;
 
 import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.CommonPost;
+import kinggora.portal.domain.dto.PageInfo;
 import kinggora.portal.domain.dto.SearchCriteria;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.CommonPostRepository;
-import kinggora.portal.repository.QnaPostRepository;
-import kinggora.portal.util.PageManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,6 @@ import java.util.List;
 public class CommonPostService {
 
     private final CommonPostRepository commonPostRepository;
-    private final QnaPostRepository qnaPostRepository;
 
     /**
      * 게시글 저장
@@ -67,8 +65,19 @@ public class CommonPostService {
      * @return 게시글 리스트
      */
     public List<CommonPost> findPosts(SearchCriteria criteria) {
-        int startRow = (criteria.getPage() - 1) * PageManager.PAGE_SIZE;
-        return commonPostRepository.findPosts(criteria, startRow, PageManager.PAGE_SIZE);
+        int startRow = (criteria.getPage() - 1) * criteria.getPageSize();
+        return commonPostRepository.findPosts(criteria, startRow, criteria.getPageSize());
+    }
+
+    public PageInfo getPageInfo(SearchCriteria criteria) {
+        int totalCount = commonPostRepository.findPostsCount(criteria);
+        int totalPages = totalCount == 0 ? 1 : (totalCount - 1) / criteria.getPageSize() + 1;
+        return PageInfo.builder()
+                .pageNum(criteria.getPage())
+                .pageSize(criteria.getPageSize())
+                .totalCount(totalCount)
+                .totalPages(totalPages)
+                .build();
     }
 
     /**
