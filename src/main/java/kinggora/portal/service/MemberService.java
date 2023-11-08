@@ -2,8 +2,8 @@ package kinggora.portal.service;
 
 import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Member;
-import kinggora.portal.domain.dto.MemberRole;
 import kinggora.portal.domain.dto.TokenInfo;
+import kinggora.portal.domain.type.MemberRole;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.MemberRepository;
 import kinggora.portal.security.CustomUserDetails;

@@ -1,4 +1,4 @@
-package kinggora.portal.domain.dto;
+package kinggora.portal.domain.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

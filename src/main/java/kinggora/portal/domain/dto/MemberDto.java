@@ -1,5 +1,6 @@
 package kinggora.portal.domain.dto;
 
+import kinggora.portal.domain.type.MemberRole;
 import lombok.*;
 
 @Getter

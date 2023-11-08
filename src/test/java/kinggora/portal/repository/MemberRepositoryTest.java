@@ -1,7 +1,7 @@
 package kinggora.portal.repository;
 
 import kinggora.portal.domain.Member;
-import kinggora.portal.domain.dto.MemberRole;
+import kinggora.portal.domain.type.MemberRole;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

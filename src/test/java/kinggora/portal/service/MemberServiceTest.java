@@ -1,8 +1,8 @@
 package kinggora.portal.service;
 
 import kinggora.portal.domain.Member;
-import kinggora.portal.domain.dto.MemberRole;
 import kinggora.portal.domain.dto.TokenInfo;
+import kinggora.portal.domain.type.MemberRole;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

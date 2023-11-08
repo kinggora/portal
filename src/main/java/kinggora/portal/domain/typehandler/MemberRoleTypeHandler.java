@@ -1,6 +1,6 @@
 package kinggora.portal.domain.typehandler;
 
-import kinggora.portal.domain.dto.MemberRole;
+import kinggora.portal.domain.type.MemberRole;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;
 import org.apache.ibatis.type.TypeHandler;
@@ -50,11 +50,12 @@ public class MemberRoleTypeHandler implements TypeHandler<MemberRole> {
 
     /**
      * DB에서 조회한 값을 기반으로 Enum 타입 매칭
+     *
      * @param roleValue MemberRole에서 value에 해당하는 값
      * @return roleValue을 value로 가지는 MemberRole 타입
      */
     private static MemberRole getMemberRole(String roleValue) {
-        switch(roleValue) {
+        switch (roleValue) {
             case "ROLE_USER":
                 return MemberRole.USER;
             case "ROLE_ADMIN":

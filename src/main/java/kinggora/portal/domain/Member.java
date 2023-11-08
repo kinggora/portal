@@ -1,10 +1,11 @@
 package kinggora.portal.domain;
 
-import kinggora.portal.domain.dto.MemberRole;
+import kinggora.portal.domain.type.MemberRole;
 import lombok.*;
 
 @Builder
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Member {
