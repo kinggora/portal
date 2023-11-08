@@ -3,9 +3,7 @@ package kinggora.portal.controller;
 import kinggora.portal.api.DataResponse;
 import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.*;
-import kinggora.portal.domain.dto.CommentDto;
-import kinggora.portal.domain.dto.PostDto;
-import kinggora.portal.domain.dto.SearchCriteria;
+import kinggora.portal.domain.dto.*;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.service.*;
 import kinggora.portal.util.SecurityUtil;
@@ -58,10 +56,15 @@ public class BoardsController {
     }
 
     @GetMapping("/posts")
-    public DataResponse<List<CommonPost>> getPosts(SearchCriteria criteria) {
+    public DataResponse<PagingDto<CommonPost>> getPosts(SearchCriteria criteria) {
         log.info("getPosts()={}", criteria);
         List<CommonPost> posts = commonPostService.findPosts(criteria);
-        return DataResponse.of(posts);
+        PageInfo pageInfo = commonPostService.getPageInfo(criteria);
+        PagingDto<CommonPost> pagingDto = PagingDto.<CommonPost>builder()
+                .data(posts)
+                .pageInfo(pageInfo)
+                .build();
+        return DataResponse.of(pagingDto);
     }
 
     @PostMapping("/post")
