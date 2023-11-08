@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FileDto {
-    private Integer postId;
-    private List<MultipartFile> newFiles = new ArrayList<>();
+    private List<MultipartFile> attachment = new ArrayList<>();
+    private List<MultipartFile> content = new ArrayList<>();
+
 }

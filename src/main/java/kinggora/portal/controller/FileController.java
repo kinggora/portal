@@ -1,7 +1,7 @@
 package kinggora.portal.controller;
 
 import kinggora.portal.api.DataResponse;
-import kinggora.portal.domain.AttachFile;
+import kinggora.portal.domain.UploadFile;
 import kinggora.portal.domain.dto.FileDto;
 import kinggora.portal.service.FileService;
 import lombok.RequiredArgsConstructor;
@@ -25,29 +25,35 @@ public class FileController {
 
     private final FileService fileService;
 
-    public DataResponse<AttachFile> getFileById(@PathVariable Integer id) {
-        AttachFile file = fileService.findFileById(id);
+    public DataResponse<UploadFile> getFileById(@PathVariable Integer id) {
+        UploadFile file = fileService.findFileById(id);
         return DataResponse.of(file);
     }
 
     @GetMapping("/{postId}")
-    public DataResponse<List<AttachFile>> getFiles(@PathVariable Integer postId) {
-        List<AttachFile> files = fileService.findFiles(postId);
+    public DataResponse<List<UploadFile>> getFiles(@PathVariable Integer postId) {
+        List<UploadFile> files = fileService.findFiles(postId);
         return DataResponse.of(files);
     }
 
-    @PostMapping
-    public DataResponse<Void> saveFiles(FileDto dto) {
-        fileService.saveFiles(dto.getPostId(), dto.getNewFiles());
+    @PostMapping("/{postId}")
+    public DataResponse<Void> saveFiles(@PathVariable Integer postId, FileDto dto) {
+        fileService.saveFiles(postId, dto);
         return DataResponse.empty();
+    }
+
+    @GetMapping("/thumbnails")
+    public DataResponse<List<UploadFile>> getThumbnailFiles(List<Integer> postIds) {
+        List<UploadFile> files = fileService.findThumbnails(postIds);
+        return DataResponse.of(files);
     }
 
     @GetMapping("/download/{id}")
     @CrossOrigin(value = {"*"}, exposedHeaders = {"Content-Disposition"})
     public ResponseEntity<Resource> downloadFile(@PathVariable Integer id) {
-        AttachFile attachFile = fileService.findFileById(id);
-        Resource resource = fileService.loadAsResource(attachFile);
-        String encodedFileName = UriUtils.encode(attachFile.getOrigName(), StandardCharsets.UTF_8);
+        UploadFile uploadFile = fileService.findFileById(id);
+        Resource resource = fileService.loadAsResource(uploadFile);
+        String encodedFileName = UriUtils.encode(uploadFile.getOrigName(), StandardCharsets.UTF_8);
         String contentDisposition = "attachment; filename=" + encodedFileName;
 
         HttpHeaders headers = new HttpHeaders();
