@@ -52,7 +52,7 @@ public class FileController {
     @CrossOrigin(value = {"*"}, exposedHeaders = {"Content-Disposition"})
     public ResponseEntity<Resource> downloadFile(@PathVariable Integer id) {
         UploadFile uploadFile = fileService.findFileById(id);
-        Resource resource = fileService.loadAsResource(uploadFile);
+        Resource resource = fileService.loadAsResource(uploadFile.getStoreName());
         String encodedFileName = UriUtils.encode(uploadFile.getOrigName(), StandardCharsets.UTF_8);
         String contentDisposition = "attachment; filename=" + encodedFileName;
 
