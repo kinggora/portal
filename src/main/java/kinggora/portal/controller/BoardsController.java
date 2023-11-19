@@ -4,6 +4,7 @@ import kinggora.portal.api.DataResponse;
 import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.*;
 import kinggora.portal.domain.dto.*;
+import kinggora.portal.domain.type.MemberRole;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.service.*;
 import kinggora.portal.util.SecurityUtil;
@@ -17,7 +18,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class BoardsController {
-    private final CommonPostService commonPostService;
+    private final BoardsService boardsService;
     private final MemberService memberService;
     private final BoardInfoService boardInfoService;
     private final CategoryService categoryService;
@@ -48,9 +49,9 @@ public class BoardsController {
     }
 
     @GetMapping("/post/{id}")
-    public DataResponse<CommonPost> getPost(@PathVariable Integer id) {
-        commonPostService.hitUp(id);
-        CommonPost post = commonPostService.findPostById(id);
+    public DataResponse<Post> getPost(@PathVariable Integer id) {
+        boardsService.hitUp(id);
+        Post post = boardsService.findPostById(id);
         log.info("post={}", post);
         return DataResponse.of(post);
     }
@@ -58,8 +59,8 @@ public class BoardsController {
     @GetMapping("/posts")
     public DataResponse<PagingDto<CommonPost>> getPosts(SearchCriteria criteria) {
         log.info("getPosts()={}", criteria);
-        List<CommonPost> posts = commonPostService.findPosts(criteria);
-        PageInfo pageInfo = commonPostService.getPageInfo(criteria);
+        List<CommonPost> posts = boardsService.findPosts(criteria);
+        PageInfo pageInfo = boardsService.getPageInfo(criteria);
         PagingDto<CommonPost> pagingDto = PagingDto.<CommonPost>builder()
                 .data(posts)
                 .pageInfo(pageInfo)
@@ -67,26 +68,57 @@ public class BoardsController {
         return DataResponse.of(pagingDto);
     }
 
+    @GetMapping("/posts/qna")
+    public DataResponse<PagingDto<QnaPost>> getQuestions(SearchCriteria criteria) {
+        log.info("getQuestions()={}", criteria);
+        List<QnaPost> questions = boardsService.findQuestions(criteria);
+        PageInfo pageInfo = boardsService.getPageInfo(criteria);
+        PagingDto<QnaPost> pagingDto = PagingDto.<QnaPost>builder()
+                .data(questions)
+                .pageInfo(pageInfo)
+                .build();
+        return DataResponse.of(pagingDto);
+    }
+
+    @GetMapping("/posts/qna/{id}")
+    public DataResponse<List<Post>> getQnA(@PathVariable Integer id) {
+        List<Post> qnaPosts = boardsService.findQnA(id);
+        return DataResponse.of(qnaPosts);
+    }
+
     @PostMapping("/post")
     public DataResponse<Integer> createPost(PostDto dto) {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         log.info("writer={}", member.getUsername());
         dto.setMemberId(member.getId());
-        Integer id = commonPostService.savePost(dto.toCommonPost());
+        Integer id = boardsService.savePost(dto.toPost());
+        return DataResponse.of(id);
+    }
+
+    @PostMapping("/post/qna")
+    public DataResponse<Integer> createAnswer(PostDto dto) {
+        Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
+        log.info("writer={}", member.getUsername());
+        if (!member.getRole().equals(MemberRole.ADMIN)) {
+            throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        dto.setMemberId(member.getId());
+        Integer id = boardsService.savePost(dto.toPost());
         return DataResponse.of(id);
     }
 
     @PutMapping("/post")
     public DataResponse<Void> updatePost(PostDto dto) {
         authorizationPost(dto.getId());
-        commonPostService.updatePost(dto.toCommonPost());
+        boardsService.updatePost(dto.toPost());
         return DataResponse.empty();
     }
+
 
     @DeleteMapping("/post/{id}")
     public DataResponse<Void> deletePost(@PathVariable Integer id) {
         authorizationPost(id);
-        commonPostService.deletePost(id);
+        boardsService.deletePost(id);
         return DataResponse.empty();
     }
 
@@ -132,7 +164,7 @@ public class BoardsController {
      * @param postId 게시물 id
      */
     private void authorizationPost(Integer postId) {
-        Member writer = commonPostService.findPostById(postId).getMember();
+        Member writer = boardsService.findPostById(postId).getMember();
         Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         if (!writer.getId().equals(signInMember.getId())) {
             throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);

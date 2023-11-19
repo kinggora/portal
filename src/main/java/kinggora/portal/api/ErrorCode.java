@@ -13,10 +13,11 @@ public enum ErrorCode {
     MISMATCH_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, -402, "리프레시 토큰의 유저 정보가 일치하지 않습니다"),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, -403, "비밀번호가 일치하지 않습니다"),
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, -404, "입력이 올바르지 않습니다."),
+    ANSWER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, -404, "답변이 이미 존재합니다."),
 
     /* 401 UNAUTHORIZED : 인증되지 않은 사용자 */
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, -410, "권한이 없는 요청입니다."),
-    UNAUTHORIZED_MEMBER(HttpStatus.UNAUTHORIZED, -411, "현재 내 계정 정보가 존재하지 않습니다"),
+    UNAUTHORIZED_MEMBER(HttpStatus.UNAUTHORIZED, -411, "계정 정보가 존재하지 않습니다"),
     INVALID_AUTH_TOKEN(HttpStatus.UNAUTHORIZED, -412, "권한 정보가 없는 토큰입니다"),
 
     /* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
@@ -30,7 +31,7 @@ public enum ErrorCode {
     /* 409 CONFLICT : Resource 의 현재 상태와 충돌. 보통 중복된 데이터 존재 */
     DUPLICATE_USERNAME(HttpStatus.CONFLICT, -430, "이미 존재하는 아이디 입니다."),
     DUPLICATE_PASSWORD(HttpStatus.CONFLICT, -431, "기존 비밀번호와 동일합니다."),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, -500,"내부 서버 오류"),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, -500, "내부 서버 오류"),
     DB_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, -600, "데이터베이스 오류");
 
     private final HttpStatus status;

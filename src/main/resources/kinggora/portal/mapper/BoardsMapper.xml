@@ -2,16 +2,15 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="kinggora.portal.mapper.CommonPostMapper">
-    <resultMap id="CommonPost" type="CommonPost">
+<mapper namespace="kinggora.portal.mapper.BoardsMapper">
+    <resultMap id="Post" type="Post">
         <id property="id" column="id"/>
         <result property="title" column="title"/>
         <result property="content" column="content"/>
         <result property="hit" column="hit"/>
         <result property="regDate" column="reg_date"/>
         <result property="modDate" column="mod_date"/>
-        <result property="attached" column="attached"/>
-        <result property="imaged" column="imaged"/>
+        <result property="parent" column="parent"/>
         <association property="boardInfo" javaType="BoardInfo" columnPrefix="bi_">
             <id property="id" column="id"/>
             <result property="name" column="name"/>
@@ -30,8 +29,18 @@
             <result property="name" column="name"/>
         </association>
     </resultMap>
+    <resultMap id="CommonPost" type="CommonPost" extends="Post">
+        <association property="fileInfo" javaType="FileInfo">
+            <result property="attached" column="attached"/>
+            <result property="imaged" column="imaged"/>
+            <result property="thumbUrl" column="thumb_url"/>
+        </association>
+    </resultMap>
+    <resultMap id="QnaPost" type="QnaPost" extends="Post">
+        <result property="existsChild" column="existsChild"/>
+    </resultMap>
 
-    <insert id="savePost" parameterType="CommonPost" useGeneratedKeys="true" keyProperty="id">
+    <insert id="savePost" parameterType="Post" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO boards(
         member_id
         , board_id
@@ -40,6 +49,7 @@
         , content
         , reg_date
         , hit
+        , parent
         )
         VALUES(
         #{member.id}
@@ -49,10 +59,11 @@
         , #{content}
         , NOW()
         , 0
+        , ${parent}
         )
     </insert>
 
-    <select id="findPostById" parameterType="int" resultMap="CommonPost">
+    <select id="findPostById" parameterType="int" resultMap="Post">
         SELECT
         b.id
         , b.title
@@ -70,14 +81,14 @@
         , m.name AS m_name
         , m.role AS m_role
         FROM boards b, member m, category c, board_info bi
-        WHERE b.id=#{id} and b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id AND b.del_flag=false
+        WHERE b.id=#{id} and b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id
     </select>
 
     <update id="hitUp" parameterType="int">
         UPDATE boards SET hit=hit+1 WHERE id=#{id} AND del_flag=false
     </update>
 
-    <update id="updatePost" parameterType="CommonPost">
+    <update id="updatePost" parameterType="Post">
         UPDATE boards
         SET title=#{title}, content=#{content}, mod_date=NOW()
         WHERE id=#{id} AND del_flag=false
@@ -110,6 +121,7 @@
         attached
         , (SELECT EXISTS (SELECT id FROM file f WHERE b.id=f.post_id AND f.del_flag=false AND f.type='C' LIMIT 1)) AS
         imaged
+        , (SELECT store_dir FROM file f WHERE b.id=f.post_id AND f.del_flag=false AND f.type='T' LIMIT 1) AS thumb_url
         FROM boards b, member m, category c, board_info bi
         WHERE b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id AND
         b.del_flag=false
@@ -141,7 +153,7 @@
     <select id="findPostsCount" parameterType="SearchCriteria" resultType="int">
         SELECT COUNT(id)
         FROM boards
-        WHERE del_flag=false
+        WHERE del_flag=false AND parent IS NULL
         <if test="boardId != null">
             AND board_id=#{boardId}
         </if>
@@ -163,6 +175,78 @@
                 AND reg_date &lt;= #{endDate}
             </when>
         </choose>
+    </select>
+
+    <select id="childExists" parameterType="int" resultType="boolean">
+        SELECT EXISTS (SELECT id FROM boards WHERE parent=#{id} LIMIT 1)
+    </select>
+
+    <select id="findQuestions" parameterType="map" resultMap="QnaPost">
+        SELECT
+        b.id
+        , b.title
+        , b.content
+        , b.reg_date
+        , b.mod_date
+        , b.hit
+        , bi.id AS bi_id
+        , bi.name AS bi_name
+        , bi.subject AS bi_subject
+        , c.id AS c_id
+        , c.name AS c_name
+        , m.id AS m_id
+        , m.username AS m_username
+        , m.name AS m_name
+        , m.role AS m_role
+        , (SELECT EXISTS (SELECT id FROM boards a WHERE a.parent=b.id LIMIT 1)) AS existsChild
+        FROM boards b, member m, category c, board_info bi
+        WHERE b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id AND
+        b.del_flag=false AND b.parent IS NULL
+        <if test="criteria.boardId != null">
+            AND b.board_id=#{criteria.boardId}
+        </if>
+        <if test="criteria.categoryId != null">
+            AND b.category_id=#{criteria.categoryId}
+        </if>
+        <if test="criteria.searchWord != null">
+            AND b.title LIKE '%${criteria.searchWord}%'
+        </if>
+        <choose>
+            <when test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate != null and criteria.endDate != '')">
+                AND (b.reg_date BETWEEN #{criteria.startDate} AND #{criteria.endDate})
+            </when>
+            <when test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate == null or criteria.endDate == '')">
+                AND b.reg_date &gt;= #{criteria.startDate}
+            </when>
+            <when test="(criteria.startDate == null or criteria.startDate == '') and (criteria.endDate != null and criteria.endDate != '')">
+                AND b.reg_date &lt;= #{criteria.endDate}
+            </when>
+        </choose>
+        ORDER BY b.reg_date DESC
+        LIMIT #{offset},#{limit}
+    </select>
+
+    <select id="findQnA" parameterType="int" resultMap="Post">
+        SELECT
+        b.id
+        , b.title
+        , b.content
+        , b.reg_date
+        , b.mod_date
+        , b.hit
+        , b.parent
+        , bi.id AS bi_id
+        , bi.name AS bi_name
+        , bi.subject AS bi_subject
+        , c.id AS c_id
+        , c.name AS c_name
+        , m.id AS m_id
+        , m.username AS m_username
+        , m.name AS m_name
+        , m.role AS m_role
+        FROM boards b, member m, category c, board_info bi
+        WHERE b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id
+        AND (b.id=#{id} OR b.parent=#{id})
     </select>
 
 </mapper>
