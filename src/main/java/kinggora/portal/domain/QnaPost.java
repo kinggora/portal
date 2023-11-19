@@ -10,7 +10,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class QnaPost extends CommonPost {
-
-    private Integer parent;
+public class QnaPost extends Post {
+    private boolean existsChild; // 답변 유무
 }

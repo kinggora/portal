@@ -1,6 +1,9 @@
 package kinggora.portal.domain.dto;
 
-import kinggora.portal.domain.*;
+import kinggora.portal.domain.BoardInfo;
+import kinggora.portal.domain.Category;
+import kinggora.portal.domain.Member;
+import kinggora.portal.domain.Post;
 import lombok.*;
 
 @Getter
@@ -18,20 +21,10 @@ public class PostDto {
     private String content;
 
 
-    public CommonPost toCommonPost() {
-        return CommonPost.builder()
+    public Post toPost() {
+        return Post.builder()
                 .id(id)
                 .boardInfo(new BoardInfo(boardId))
-                .member(new Member(memberId))
-                .category(new Category(categoryId))
-                .title(title)
-                .content(content)
-                .build();
-    }
-
-    public QnaPost toQnaPost() {
-        return QnaPost.builder()
-                .id(id)
                 .member(new Member(memberId))
                 .category(new Category(categoryId))
                 .title(title)
