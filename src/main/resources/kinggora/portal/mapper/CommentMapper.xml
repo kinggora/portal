@@ -102,20 +102,14 @@
         WHERE id=#{id}
     </update>
 
-    <update id="hideCommentById" parameterType="int">
+    <update id="hideComment" parameterType="int">
         UPDATE comment
         SET del_flag=true, mod_date=NOW()
         WHERE id=#{id}
     </update>
 
-    <update id="hideComments" parameterType="int">
-        UPDATE comment
-        SET del_flag=true, mod_date=NOW()
-        WHERE post_id=#{postId}
-    </update>
-
     <update id="deleteComment" parameterType="int">
-        DELETE comment WHERE id=#{id}
+        DELETE FROM comment WHERE id=#{id}
     </update>
 
     <select id="childExists" parameterType="int" resultType="boolean">

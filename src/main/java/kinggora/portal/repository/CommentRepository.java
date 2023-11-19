@@ -61,9 +61,9 @@ public class CommentRepository {
     }
 
     /**
-     * 동일한 그룹 내 해당 댓글보다 뒷 순서인 댓글 중에서 depth가 같거나 작은 댓글이 존재하는지
-     * 존재 : 유일하지 않거나 최솟값이 아님 => false 반환
+     * 동일한 그룹 내 comment보다 뒷 순서인 댓글 중에서 depth가 같거나 작은 댓글이 존재하는지
      * 존재 X : 유일한 Minimum Depth => true 반환
+     * 존재 : 유일하지 않거나 최솟값이 아님 => false 반환
      *
      * @param comment 댓글 정보
      * @return
@@ -120,19 +120,10 @@ public class CommentRepository {
      *
      * @param id 댓글 id
      */
-    public void hideCommentById(Integer id) {
-        if (mapper.hideCommentById(id) != 1) {
-            log.error("fail CommentRepository.hideCommentById");
+    public void hideComment(Integer id) {
+        if (mapper.hideComment(id) != 1) {
+            log.error("fail CommentRepository.hideComment");
         }
-    }
-
-    /**
-     * 해당 게시글에 대한 댓글 숨기기
-     *
-     * @param postId 게시글 id
-     */
-    public void hideComments(Integer postId) {
-        mapper.hideComments(postId);
     }
 
     /**
@@ -141,7 +132,9 @@ public class CommentRepository {
      * @param id 댓글 id
      */
     public void deleteComment(Integer id) {
-        mapper.deleteComment(id);
+        if (mapper.deleteComment(id) != 1) {
+            log.error("fail CommentRepository.deleteComment");
+        }
     }
 
     /**

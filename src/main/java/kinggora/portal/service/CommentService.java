@@ -66,9 +66,9 @@ public class CommentService {
      */
     public void deleteComment(Integer id) {
         if (commentRepository.childExists(id)) {
-            commentRepository.deleteComment(id);
+            commentRepository.hideComment(id);
         } else {
-            commentRepository.hideCommentById(id);
+            commentRepository.deleteComment(id);
         }
     }
 
