@@ -11,6 +11,7 @@
         <result property="regDate" column="reg_date"/>
         <result property="modDate" column="mod_date"/>
         <result property="parent" column="parent"/>
+        <result property="deleted" column="del_flag"/>
         <association property="boardInfo" javaType="BoardInfo" columnPrefix="bi_">
             <id property="id" column="id"/>
             <result property="name" column="name"/>
@@ -22,7 +23,8 @@
             <result property="username" column="username"/>
             <result property="password" column="password"/>
             <result property="name" column="name"/>
-            <result property="role" column="role"/>
+            <result property="role" column="role"
+                    typeHandler="kinggora.portal.domain.typehandler.MemberRoleTypeHandler"/>
         </association>
         <association property="category" javaType="Category" columnPrefix="c_">
             <id property="id" column="id"/>
@@ -47,9 +49,10 @@
         , category_id
         , title
         , content
+        , parent
         , reg_date
         , hit
-        , parent
+        , del_flag
         )
         VALUES(
         #{member.id}
@@ -57,9 +60,10 @@
         , #{category.id}
         , #{title}
         , #{content}
+        , #{parent}
         , NOW()
         , 0
-        , ${parent}
+        , false
         )
     </insert>
 
@@ -71,6 +75,7 @@
         , b.reg_date
         , b.mod_date
         , b.hit
+        , b.del_flag
         , bi.id AS bi_id
         , bi.name AS bi_name
         , bi.subject AS bi_subject
@@ -85,13 +90,13 @@
     </select>
 
     <update id="hitUp" parameterType="int">
-        UPDATE boards SET hit=hit+1 WHERE id=#{id} AND del_flag=false
+        UPDATE boards SET hit=hit+1 WHERE id=#{id}
     </update>
 
     <update id="updatePost" parameterType="Post">
         UPDATE boards
-        SET title=#{title}, content=#{content}, mod_date=NOW()
-        WHERE id=#{id} AND del_flag=false
+        SET title=#{title}, content=#{content}, category_id=#{category.id}, mod_date=NOW()
+        WHERE id=#{id}
     </update>
 
     <delete id="deletePost" parameterType="int">
@@ -178,7 +183,7 @@
     </select>
 
     <select id="childExists" parameterType="int" resultType="boolean">
-        SELECT EXISTS (SELECT id FROM boards WHERE parent=#{id} LIMIT 1)
+        SELECT EXISTS (SELECT id FROM boards WHERE parent=#{id} AND del_flag=false LIMIT 1)
     </select>
 
     <select id="findQuestions" parameterType="map" resultMap="QnaPost">
@@ -226,7 +231,7 @@
         LIMIT #{offset},#{limit}
     </select>
 
-    <select id="findQnA" parameterType="int" resultMap="Post">
+    <select id="findChildPosts" parameterType="int" resultMap="Post">
         SELECT
         b.id
         , b.title
@@ -246,7 +251,7 @@
         , m.role AS m_role
         FROM boards b, member m, category c, board_info bi
         WHERE b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id
-        AND (b.id=#{id} OR b.parent=#{id})
+        AND b.parent=#{id} AND b.del_flag=false
     </select>
 
 </mapper>

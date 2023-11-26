@@ -41,12 +41,37 @@
     </select>
 
     <select id="findFileById" parameterType="int" resultType="UploadFile">
-        SELECT * FROM file WHERE id=#{id} AND del_flag=false LIMIT 1
+        SELECT
+        id
+        , post_id
+        , orig_name
+        , store_name
+        , store_dir
+        , ext
+        , size
+        , type
+        , del_flag AS deleted
+        FROM file WHERE id=#{id}
     </select>
 
     <select id="findFiles" parameterType="int" resultType="UploadFile">
-        SELECT * FROM file WHERE post_id=#{postId} AND del_flag=false
+        SELECT
+        id
+        , post_id
+        , orig_name
+        , store_name
+        , store_dir
+        , ext
+        , size
+        , type
+        FROM file WHERE post_id=#{postId} AND del_flag=false
     </select>
+
+    <update id="deleteFile" parameterType="int">
+        UPDATE file
+        SET del_flag=true
+        WHERE id=#{id} AND del_flag=false
+    </update>
 
     <update id="deleteFiles" parameterType="int">
         UPDATE file

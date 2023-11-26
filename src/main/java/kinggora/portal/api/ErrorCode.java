@@ -23,10 +23,14 @@ public enum ErrorCode {
     /* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, -420, "해당 유저 정보를 찾을 수 없습니다"),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, -421, "로그아웃 된 사용자입니다"),
-    POST_NOT_FOUND(HttpStatus.NOT_FOUND, -422, "해당 게시글을 찾을 수 없습니다"),
-    FILE_NOT_FOUND(HttpStatus.NOT_FOUND, -423, "해당 파일을 찾을 수 없습니다"),
-    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, -424, "해당 댓글을 찾을 수 없습니다"),
-    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, -425, "해당 게시판을 찾을 수 없습니다"),
+    POST_NOT_FOUND(HttpStatus.NOT_FOUND, -422, "존재하지 않는 게시글입니다"),
+    FILE_NOT_FOUND(HttpStatus.NOT_FOUND, -423, "존재하지 않는 파일입니다."),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, -424, "존재하지 않는 댓글입니다."),
+    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, -425, "존재하지 않는 게시판입니다."),
+    ALREADY_DELETED_POST(HttpStatus.NOT_FOUND, -426, "삭제된 게시글입니다"),
+    ALREADY_DELETED_FILE(HttpStatus.NOT_FOUND, -427, "삭제된 파일입니다"),
+    ALREADY_DELETED_COMMENT(HttpStatus.NOT_FOUND, -428, "삭제된 댓글입니다"),
+    ALREADY_DELETED_BOARD(HttpStatus.NOT_FOUND, -429, "삭제된 게시판입니다"),
 
     /* 409 CONFLICT : Resource 의 현재 상태와 충돌. 보통 중복된 데이터 존재 */
     DUPLICATE_USERNAME(HttpStatus.CONFLICT, -430, "이미 존재하는 아이디 입니다."),

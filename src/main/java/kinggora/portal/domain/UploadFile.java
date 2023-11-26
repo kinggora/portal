@@ -17,4 +17,5 @@ public class UploadFile {
     private String ext;
     private long size;
     private FileType type;
+    private boolean deleted;
 }

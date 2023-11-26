@@ -73,7 +73,7 @@ public interface BoardsMapper {
      */
     List<QnaPost> findQuestions(@Param("criteria") SearchCriteria criteria, @Param("offset") int offset, @Param("limit") int limit);
 
-    List<Post> findQnA(int id);
+    List<Post> findChildPosts(int id);
 
     /**
      * 검색 조건에 해당하는 게시글 개수 조회

@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -47,8 +48,15 @@ public class CommentService {
     }
 
     public Comment findCommentById(Integer id) {
-        return commentRepository.findCommentById(id)
-                .orElseThrow(() -> new BizException(ErrorCode.COMMENT_NOT_FOUND));
+        Optional<Comment> optional = commentRepository.findCommentById(id);
+        if (optional.isEmpty()) {
+            throw new BizException(ErrorCode.COMMENT_NOT_FOUND);
+        }
+        Comment comment = optional.get();
+        if (comment.isDeleted()) {
+            throw new BizException(ErrorCode.ALREADY_DELETED_COMMENT);
+        }
+        return comment;
     }
 
     public void updateComment(CommentDto dto) {

@@ -24,4 +24,5 @@ public class Post {
     private Integer parent;
     private LocalDateTime regDate;
     private LocalDateTime modDate;
+    private boolean deleted;
 }

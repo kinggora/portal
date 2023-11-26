@@ -51,8 +51,15 @@ public class FileService {
      * @return
      */
     public UploadFile findFileById(int id) {
-        return fileRepository.findFileById(id)
-                .orElseThrow(() -> new BizException(ErrorCode.FILE_NOT_FOUND));
+        Optional<UploadFile> optional = fileRepository.findFileById(id);
+        if (optional.isEmpty()) {
+            throw new BizException(ErrorCode.FILE_NOT_FOUND);
+        }
+        UploadFile uploadFile = optional.get();
+        if (uploadFile.isDeleted()) {
+            throw new BizException(ErrorCode.ALREADY_DELETED_FILE);
+        }
+        return uploadFile;
     }
 
     /**
@@ -65,11 +72,21 @@ public class FileService {
         return fileRepository.findFiles(postId);
     }
 
-    public List<UploadFile> findThumbnails(List<Integer> postIds) {
-        if (postIds.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return fileRepository.findFilesOfType(postIds, FileType.THUMBNAIL);
+//    public List<UploadFile> findThumbnails(List<Integer> postIds) {
+//        if (postIds.isEmpty()) {
+//            return new ArrayList<>();
+//        }
+//        return fileRepository.findFilesOfType(postIds, FileType.THUMBNAIL);
+//    }
+
+    /**
+     * 첨부 파일 삭제
+     *
+     * @param id 파일 id
+     * @return
+     */
+    public void deleteFile(int id) {
+        fileRepository.deleteFile(id);
     }
 
     /**
@@ -140,6 +157,7 @@ public class FileService {
 
     private UploadFile uploadThumbFile(MultipartFile origFile, int postId) {
         byte[] thumbnail = thumbnailUtil.createThumbnail(origFile);
+        String origFileName = thumbnailUtil.getThumbFileName(origFile.getOriginalFilename());
         String extension = ThumbnailUtil.THUMB_EXT;
         String storeFileName = createStoreFileName(extension);
         long size = thumbnail.length;
@@ -150,6 +168,7 @@ public class FileService {
         return UploadFile.builder()
                 .postId(postId)
                 .storeDir(storeDir)
+                .origName(origFileName)
                 .storeName(storeFileName)
                 .ext(extension)
                 .size(size)
@@ -197,30 +216,4 @@ public class FileService {
         }
         return type != null && type.startsWith("image");
     }
-
-//    public List<FileInfo> getFileInfos(List<Integer> postIds) {
-//        List<FileInfo> fileInfos = new ArrayList<>();
-//        for (int postId : postIds) {
-//            fileInfos.add(createFileInfo(postId));
-//        }
-//        return fileInfos;
-//    }
-//
-//    private FileInfo createFileInfo(int postId) {
-//        List<UploadFile> files = findFiles(postId);
-//        boolean attached = findFileOfType(files, FileType.ATTACHMENT).isPresent();
-//        boolean imaged = findFileOfType(files, FileType.CONTENT).isPresent();
-//        Optional<UploadFile> thumbnail = findFileOfType(files, FileType.THUMBNAIL);
-//        return FileInfo.builder()
-//                .attached(attached)
-//                .imaged(imaged)
-//                .thumbnail(thumbnail.orElse(null))
-//                .build();
-//    }
-//
-//    private Optional<UploadFile> findFileOfType(List<UploadFile> files, FileType type) {
-//        return files.stream()
-//                .filter(file -> file.getType().equals(type)).findFirst();
-//    }
-
 }

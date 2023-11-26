@@ -1,9 +1,7 @@
 package kinggora.portal.mapper;
 
 import kinggora.portal.domain.UploadFile;
-import kinggora.portal.domain.type.FileType;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +22,7 @@ public interface FileMapper {
      * @param id 파일 id
      * @return 파일 정보
      */
-    Optional<UploadFile> findFileById(Integer id);
+    Optional<UploadFile> findFileById(int id);
 
     /**
      * 해당 게시글에 첨부된 파일 정보 조회
@@ -32,9 +30,11 @@ public interface FileMapper {
      * @param postId 게시글 id
      * @return 파일 정보 리스트
      */
-    List<UploadFile> findFiles(Integer postId);
+    List<UploadFile> findFiles(int postId);
 
-    List<UploadFile> findFilesOfType(@Param("postIds") List<Integer> postIds, @Param("type") FileType type);
+    //List<UploadFile> findFilesOfType(@Param("postIds") List<Integer> postIds, @Param("type") FileType type);
 
-    int deleteFiles(Integer postId);
+    int deleteFile(int id);
+
+    int deleteFiles(int postId);
 }

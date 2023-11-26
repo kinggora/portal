@@ -21,5 +21,5 @@ public class Comment {
     private Integer refOrder;
     private Integer parent;
     private Integer depth;
-    private boolean delFlag;
+    private boolean deleted;
 }

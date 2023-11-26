@@ -13,13 +13,14 @@
         <result property="depth" column="depth"/>
         <result property="regDate" column="reg_date"/>
         <result property="modDate" column="mod_date"/>
-        <result property="delFlag" column="del_flag"/>
+        <result property="deleted" column="del_flag"/>
         <association property="member" javaType="Member" columnPrefix="m_">
             <id property="id" column="id"/>
             <result property="username" column="username"/>
             <result property="password" column="password"/>
             <result property="name" column="name"/>
-            <result property="role" column="role"/>
+            <result property="role" column="role"
+                    typeHandler="kinggora.portal.domain.typehandler.MemberRoleTypeHandler"/>
         </association>
     </resultMap>
 
@@ -43,7 +44,7 @@
         , #{depth}
         , #{ref}
         , #{refOrder}
-        , #{delFlag}
+        , #{deleted}
         )
     </insert>
 
@@ -105,7 +106,7 @@
     <update id="hideComment" parameterType="int">
         UPDATE comment
         SET del_flag=true, mod_date=NOW()
-        WHERE id=#{id}
+        WHERE id=#{id} AND del_flag=true
     </update>
 
     <update id="deleteComment" parameterType="int">
