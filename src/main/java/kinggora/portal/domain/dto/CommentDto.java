@@ -7,7 +7,6 @@ import lombok.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -23,15 +22,12 @@ public class CommentDto {
     @NotBlank
     @Size(min = 1, max = 1000)
     private String content;
-    private Integer parent;
 
-    public Comment toComment() {
+    public Comment toUpdateComment() {
         return Comment.builder()
                 .id(id)
                 .postId(postId)
-                .member(new Member(memberId))
                 .content(content)
-                .parent(parent)
                 .build();
     }
 
@@ -41,7 +37,6 @@ public class CommentDto {
                 .member(new Member(memberId))
                 .content(content)
                 .postId(postId)
-                .regDate(LocalDateTime.now())
                 .depth(0)
                 .ref(ref)
                 .refOrder(0)
@@ -49,13 +44,14 @@ public class CommentDto {
                 .build();
     }
 
-    public Comment toChildComment(int depth, int ref, int refOrder) {
+    public Comment toChildComment(Comment parent, int refOrder) {
+        int depth = parent.getDepth() + 1;
+        int ref = parent.getRef();
         return Comment.builder()
-                .parent(parent)
+                .parent(parent.getId())
                 .member(new Member(memberId))
                 .content(content)
                 .postId(postId)
-                .regDate(LocalDateTime.now())
                 .depth(depth)
                 .ref(ref)
                 .refOrder(refOrder)

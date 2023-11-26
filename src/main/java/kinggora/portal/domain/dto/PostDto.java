@@ -15,7 +15,6 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostDto {
-    private Integer memberId;
     private Integer categoryId;
     private Integer boardId;
     private Integer parent;
@@ -25,7 +24,7 @@ public class PostDto {
     private String content;
 
 
-    public Post toPost() {
+    public Post toPost(int memberId) {
         return Post.builder()
                 .boardInfo(new BoardInfo(boardId))
                 .member(new Member(memberId))

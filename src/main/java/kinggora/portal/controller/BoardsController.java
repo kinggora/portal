@@ -91,21 +91,17 @@ public class BoardsController {
     @PostMapping("/posts")
     public DataResponse<Integer> createPost(@Valid PostDto dto) {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
-        log.info("writer={}", member.getUsername());
-        dto.setMemberId(member.getId());
-        Integer id = boardsService.savePost(dto.toPost());
+        Integer id = boardsService.savePost(dto.toPost(member.getId()));
         return DataResponse.of(id);
     }
 
     @PostMapping("/posts/qna")
     public DataResponse<Integer> createAnswer(@Valid PostDto dto) {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
-        log.info("writer={}", member.getUsername());
-        if (!member.getRole().equals(MemberRole.ADMIN)) {
+        if (!member.getRole().contains(MemberRole.ADMIN)) {
             throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
-        dto.setMemberId(member.getId());
-        Integer id = boardsService.savePost(dto.toPost());
+        Integer id = boardsService.savePost(dto.toPost(member.getId()));
         return DataResponse.of(id);
     }
 
@@ -136,7 +132,14 @@ public class BoardsController {
         dto.setMemberId(member.getId());
         int id = commentService.saveComment(dto);
         return DataResponse.of(id);
+    }
 
+    @PostMapping("/comments/{parent}")
+    public DataResponse<Integer> createChildComment(@PathVariable Integer parent, @Valid CommentDto dto) {
+        Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
+        dto.setMemberId(member.getId());
+        int id = commentService.saveChildComment(parent, dto);
+        return DataResponse.of(id);
     }
 
     @PutMapping("/comments")
@@ -161,8 +164,7 @@ public class BoardsController {
      */
     private void authorizationPost(Integer postId) {
         Member writer = boardsService.findPostById(postId).getMember();
-        Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
-        if (!writer.getId().equals(signInMember.getId())) {
+        if (!SecurityUtil.getCurrentUsername().equals(writer.getUsername())) {
             throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
     }
@@ -175,8 +177,7 @@ public class BoardsController {
      */
     private void authorizationComment(Integer commentId) {
         Member writer = commentService.findCommentById(commentId).getMember();
-        Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
-        if (!writer.getId().equals(signInMember.getId())) {
+        if (!SecurityUtil.getCurrentUsername().equals(writer.getUsername())) {
             throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
     }

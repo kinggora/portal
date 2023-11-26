@@ -1,6 +1,8 @@
 package kinggora.portal.repository;
 
+import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Comment;
+import kinggora.portal.exception.BizException;
 import kinggora.portal.mapper.CommentMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +25,9 @@ public class CommentRepository {
      * @return 댓글 id
      */
     public int saveComment(Comment comment) {
-        if (mapper.saveComment(comment) != 1) {
+        if (mapper.saveComment(comment) == 0) {
             log.error("fail CommentRepository.saveComment");
+            throw new BizException(ErrorCode.DB_ERROR, "댓글 등록 실패");
         }
         return comment.getId();
     }
@@ -66,7 +69,6 @@ public class CommentRepository {
      * 존재 : 유일하지 않거나 최솟값이 아님 => false 반환
      *
      * @param comment 댓글 정보
-     * @return
      */
     public boolean isOnlyMinimumDepth(Comment comment) {
         return mapper.isOnlyMinimumDepth(comment);
@@ -78,10 +80,11 @@ public class CommentRepository {
      *
      * @param ref      댓글 그룹
      * @param refOrder 업데이트 기준 값
-     * @return 수정된 row 개수
      */
-    public int updateRefOrder(Integer ref, Integer refOrder) {
-        return mapper.updateRefOrder(ref, refOrder);
+    public void updateRefOrder(Integer ref, Integer refOrder) {
+        if (mapper.updateRefOrder(ref, refOrder) == 0) {
+            log.error("fail CommentRepository.updateComment");
+        }
     }
 
     /**
@@ -110,8 +113,9 @@ public class CommentRepository {
      * @param comment 수정할 데이터
      */
     public void updateComment(Comment comment) {
-        if (mapper.updateComment(comment) != 1) {
+        if (mapper.updateComment(comment) == 0) {
             log.error("fail CommentRepository.updateComment");
+            throw new BizException(ErrorCode.DB_ERROR, "댓글 수정 실패");
         }
     }
 
@@ -121,8 +125,9 @@ public class CommentRepository {
      * @param id 댓글 id
      */
     public void hideComment(Integer id) {
-        if (mapper.hideComment(id) != 1) {
+        if (mapper.hideComment(id) == 0) {
             log.error("fail CommentRepository.hideComment");
+            throw new BizException(ErrorCode.DB_ERROR, "댓글 삭제 실패");
         }
     }
 
@@ -132,8 +137,9 @@ public class CommentRepository {
      * @param id 댓글 id
      */
     public void deleteComment(Integer id) {
-        if (mapper.deleteComment(id) != 1) {
+        if (mapper.deleteComment(id) == 0) {
             log.error("fail CommentRepository.deleteComment");
+            throw new BizException(ErrorCode.DB_ERROR, "댓글 삭제 실패");
         }
     }
 

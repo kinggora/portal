@@ -1,9 +1,6 @@
 package kinggora.portal.repository;
 
-import kinggora.portal.domain.BoardInfo;
-import kinggora.portal.domain.Category;
-import kinggora.portal.domain.CommonPost;
-import kinggora.portal.domain.Member;
+import kinggora.portal.domain.*;
 import kinggora.portal.domain.type.MemberRole;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -13,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -23,7 +21,7 @@ class CommonPostRepositoryTest {
     @Autowired
     MemberRepository memberRepository;
     @Autowired
-    CommonPostRepository commonPostRepository;
+    BoardsRepository commonPostRepository;
     Member writer;
 
     @BeforeEach
@@ -32,7 +30,7 @@ class CommonPostRepositoryTest {
                 .username(UUID.randomUUID().toString().substring(0, 8))
                 .password(UUID.randomUUID().toString().substring(0, 8))
                 .name(UUID.randomUUID().toString().substring(0, 5))
-                .role(MemberRole.USER)
+                .role(List.of(MemberRole.USER))
                 .build();
         memberRepository.saveMember(writer);
     }
@@ -48,7 +46,7 @@ class CommonPostRepositoryTest {
                 .build();
         int id = commonPostRepository.savePost(post);
 
-        CommonPost findPost = commonPostRepository.findPostById(id).get();
+        Post findPost = commonPostRepository.findPostById(id).get();
         Assertions.assertThat(findPost.getTitle()).isEqualTo(post.getTitle());
         Assertions.assertThat(findPost.getContent()).isEqualTo(post.getContent());
         Assertions.assertThat(findPost.getMember().getId()).isEqualTo(writer.getId());
@@ -69,7 +67,7 @@ class CommonPostRepositoryTest {
         int id = commonPostRepository.savePost(post);
 
         commonPostRepository.hitUp(id);
-        CommonPost findPost = commonPostRepository.findPostById(post.getId()).get();
+        Post findPost = commonPostRepository.findPostById(post.getId()).get();
         Assertions.assertThat(findPost.getHit()).isEqualTo(1);
     }
 }

@@ -20,30 +20,31 @@ public class CommentService {
     private final CommentRepository commentRepository;
 
     /**
-     * 댓글 저장
-     * parent == null => RootComment
-     * parent != null => ChildComment
-     * <p>
-     * RootComment
+     * 댓글 저장 (RootComment)
      * ref: 기존에 존재하는 ref의 최댓값 + 1
-     * <p>
-     * ChildComment
-     * ref: 부모와 동일한 값 (그룹)
-     * depth: 부모의 depth + 1
      *
      * @param dto 사용자 입력 데이터
      * @return 댓글 id
      */
     public int saveComment(CommentDto dto) {
-        Comment comment;
-        if (dto.getParent() == null) {
-            int ref = commentRepository.findMaxRef() + 1;
-            comment = dto.toRootComment(ref);
-        } else {
-            Comment parent = findCommentById(dto.getParent());
-            int refOrder = findRefOrder(parent);
-            comment = dto.toChildComment(parent.getDepth() + 1, parent.getRef(), refOrder);
-        }
+        int ref = commentRepository.findMaxRef() + 1;
+        Comment comment = dto.toRootComment(ref);
+        return commentRepository.saveComment(comment);
+    }
+
+    /**
+     * 댓글 저장 (ChildComment)
+     * ref: 부모와 동일한 값 (그룹)
+     * depth: 부모의 depth + 1
+     *
+     * @param parentId 부모 id
+     * @param dto      사용자 입력 데이터
+     * @return 댓글 id
+     */
+    public int saveChildComment(Integer parentId, CommentDto dto) {
+        Comment parent = findCommentById(parentId);
+        int refOrder = findRefOrder(parent);
+        Comment comment = dto.toChildComment(parent, refOrder);
         return commentRepository.saveComment(comment);
     }
 
@@ -60,7 +61,7 @@ public class CommentService {
     }
 
     public void updateComment(CommentDto dto) {
-        commentRepository.updateComment(dto.toComment());
+        commentRepository.updateComment(dto.toUpdateComment());
     }
 
     public List<Comment> findComments(Integer postId) {

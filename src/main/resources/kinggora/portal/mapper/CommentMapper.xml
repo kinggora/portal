@@ -39,7 +39,7 @@
         #{postId}
         , #{member.id}
         , #{content}
-        , #{regDate}
+        , NOW()
         , #{parent}
         , #{depth}
         , #{ref}
