@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
@@ -24,7 +25,7 @@ public class BoardsController {
     private final CategoryService categoryService;
     private final CommentService commentService;
 
-    @GetMapping("/info")
+    @GetMapping("/infos")
     public DataResponse<List<BoardInfo>> boardInfo() {
         log.info("boardInfo");
         List<BoardInfo> boardInfo = boardInfoService.findBoardInfo();
@@ -36,31 +37,30 @@ public class BoardsController {
         return DataResponse.of(boardInfo);
     }
 
-    @GetMapping("/info/{name}")
+    @GetMapping("/infos/{name}")
     public DataResponse<BoardInfo> boardInfoById(@PathVariable String name) {
         BoardInfo boardInfo = boardInfoService.findBoardInfoByName(name);
         return DataResponse.of(boardInfo);
     }
 
-    @GetMapping(value = "/category/{boardId}")
-    public DataResponse<List<Category>> category(@PathVariable Integer boardId) {
+    @GetMapping(value = "/categories/{boardId}")
+    public DataResponse<List<Category>> getCategories(@PathVariable Integer boardId) {
         List<Category> categories = categoryService.findCategories(boardId);
         return DataResponse.of(categories);
     }
 
-    @GetMapping("/post/{id}")
+    @GetMapping("/posts/{id}")
     public DataResponse<Post> getPost(@PathVariable Integer id) {
         boardsService.hitUp(id);
         Post post = boardsService.findPostById(id);
-        log.info("post={}", post);
         return DataResponse.of(post);
     }
 
     @GetMapping("/posts")
-    public DataResponse<PagingDto<CommonPost>> getPosts(SearchCriteria criteria) {
-        log.info("getPosts()={}", criteria);
-        List<CommonPost> posts = boardsService.findPosts(criteria);
-        PageInfo pageInfo = boardsService.getPageInfo(criteria);
+    public DataResponse<PagingDto<CommonPost>> getPosts(@ModelAttribute PagingCriteria pagingCriteria, @ModelAttribute @Valid SearchCriteria searchCriteria) {
+        log.info("pagingCriteria={}, searchCriteria={}", pagingCriteria, searchCriteria);
+        List<CommonPost> posts = boardsService.findPosts(pagingCriteria, searchCriteria);
+        PageInfo pageInfo = boardsService.getPageInfo(pagingCriteria, searchCriteria);
         PagingDto<CommonPost> pagingDto = PagingDto.<CommonPost>builder()
                 .data(posts)
                 .pageInfo(pageInfo)
@@ -69,10 +69,10 @@ public class BoardsController {
     }
 
     @GetMapping("/posts/qna")
-    public DataResponse<PagingDto<QnaPost>> getQuestions(SearchCriteria criteria) {
-        log.info("getQuestions()={}", criteria);
-        List<QnaPost> questions = boardsService.findQuestions(criteria);
-        PageInfo pageInfo = boardsService.getPageInfo(criteria);
+    public DataResponse<PagingDto<QnaPost>> getQuestions(@ModelAttribute PagingCriteria pagingCriteria, @ModelAttribute @Valid SearchCriteria searchCriteria) {
+        log.info("pagingCriteria={}, searchCriteria={}", pagingCriteria, searchCriteria);
+        List<QnaPost> questions = boardsService.findQuestions(pagingCriteria, searchCriteria);
+        PageInfo pageInfo = boardsService.getPageInfo(pagingCriteria, searchCriteria);
         PagingDto<QnaPost> pagingDto = PagingDto.<QnaPost>builder()
                 .data(questions)
                 .pageInfo(pageInfo)
@@ -82,12 +82,14 @@ public class BoardsController {
 
     @GetMapping("/posts/qna/{id}")
     public DataResponse<List<Post>> getQnA(@PathVariable Integer id) {
-        List<Post> qnaPosts = boardsService.findQnA(id);
+        Post question = boardsService.findPostById(id);
+        List<Post> qnaPosts = boardsService.findChildPosts(id);
+        qnaPosts.add(question);
         return DataResponse.of(qnaPosts);
     }
 
-    @PostMapping("/post")
-    public DataResponse<Integer> createPost(PostDto dto) {
+    @PostMapping("/posts")
+    public DataResponse<Integer> createPost(@Valid PostDto dto) {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         log.info("writer={}", member.getUsername());
         dto.setMemberId(member.getId());
@@ -95,8 +97,8 @@ public class BoardsController {
         return DataResponse.of(id);
     }
 
-    @PostMapping("/post/qna")
-    public DataResponse<Integer> createAnswer(PostDto dto) {
+    @PostMapping("/posts/qna")
+    public DataResponse<Integer> createAnswer(@Valid PostDto dto) {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         log.info("writer={}", member.getUsername());
         if (!member.getRole().equals(MemberRole.ADMIN)) {
@@ -107,15 +109,15 @@ public class BoardsController {
         return DataResponse.of(id);
     }
 
-    @PutMapping("/post")
-    public DataResponse<Void> updatePost(PostDto dto) {
-        authorizationPost(dto.getId());
-        boardsService.updatePost(dto.toPost());
+    @PutMapping("/posts/{id}")
+    public DataResponse<Void> updatePost(@PathVariable Integer id, @Valid PostDto dto) {
+        authorizationPost(id);
+        boardsService.updatePost(dto.toUpdatePost(id));
         return DataResponse.empty();
     }
 
 
-    @DeleteMapping("/post/{id}")
+    @DeleteMapping("/posts/{id}")
     public DataResponse<Void> deletePost(@PathVariable Integer id) {
         authorizationPost(id);
         boardsService.deletePost(id);
@@ -128,14 +130,8 @@ public class BoardsController {
         return DataResponse.of(comments);
     }
 
-    @GetMapping("/comment/{id}")
-    public DataResponse<Comment> getComment(@PathVariable Integer id) {
-        Comment comment = commentService.findCommentById(id);
-        return DataResponse.of(comment);
-    }
-
-    @PostMapping("/comment")
-    public DataResponse<Integer> createComment(CommentDto dto) {
+    @PostMapping("/comments")
+    public DataResponse<Integer> createComment(@Valid CommentDto dto) {
         Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
         dto.setMemberId(member.getId());
         int id = commentService.saveComment(dto);
@@ -143,14 +139,14 @@ public class BoardsController {
 
     }
 
-    @PutMapping("/comment")
-    public DataResponse<Void> updateComment(CommentDto dto) {
+    @PutMapping("/comments")
+    public DataResponse<Void> updateComment(@Valid CommentDto dto) {
         authorizationComment(dto.getId());
         commentService.updateComment(dto);
         return DataResponse.empty();
     }
 
-    @DeleteMapping("/comment/{id}")
+    @DeleteMapping("/comments/{id}")
     public DataResponse<Void> deleteComment(@PathVariable Integer id) {
         authorizationComment(id);
         commentService.deleteComment(id);
