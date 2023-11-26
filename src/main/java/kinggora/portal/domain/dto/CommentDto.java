@@ -4,6 +4,9 @@ import kinggora.portal.domain.Comment;
 import kinggora.portal.domain.Member;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Getter
@@ -14,8 +17,11 @@ import java.time.LocalDateTime;
 public class CommentDto {
 
     private Integer id;
+    @NotNull
     private Integer postId;
     private Integer memberId;
+    @NotBlank
+    @Size(min = 1, max = 1000)
     private String content;
     private Integer parent;
 
@@ -39,7 +45,7 @@ public class CommentDto {
                 .depth(0)
                 .ref(ref)
                 .refOrder(0)
-                .delFlag(false)
+                .deleted(false)
                 .build();
     }
 
@@ -53,7 +59,7 @@ public class CommentDto {
                 .depth(depth)
                 .ref(ref)
                 .refOrder(refOrder)
-                .delFlag(false)
+                .deleted(false)
                 .build();
     }
 
