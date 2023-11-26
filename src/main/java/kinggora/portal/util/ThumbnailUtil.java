@@ -40,6 +40,11 @@ public class ThumbnailUtil {
         return thumbOutput.toByteArray();
     }
 
+    public String getThumbFileName(String originName) {
+        int index = originName.lastIndexOf(".");
+        return "t_" + originName.substring(0, index) + "_" + THUMB_WIDTH + "x" + THUMB_HEIGHT + originName.substring(index);
+    }
+
     private double getReducedSize(double origSize) {
         return Math.ceil(origSize / RATIO);
     }
