@@ -17,6 +17,7 @@ public class MemberRepository {
 
     /**
      * 회원 저장
+     *
      * @param member 저장할 회원 정보
      * @return 회원 id
      */
@@ -27,6 +28,7 @@ public class MemberRepository {
 
     /**
      * 회원 단건 조회 (id)
+     *
      * @param id 회원 id
      * @return 회원
      */
@@ -36,6 +38,7 @@ public class MemberRepository {
 
     /**
      * 회원 단건 조회 (username)
+     *
      * @param username 회원 로그인 id
      * @return 회원
      */
@@ -45,26 +48,28 @@ public class MemberRepository {
 
     /**
      * 회원 정보 수정
+     *
      * @param member
      */
     public void updateMember(Member member) {
-        if(mapper.updateMember(member) != 1) {
+        if (mapper.updateMember(member) != 1) {
             log.error("fail MemberRepository.updateMember");
         }
     }
 
     public void updatePassword(Member member) {
-        if(mapper.updatePassword(member) != 1) {
+        if (mapper.updatePassword(member) != 1) {
             log.error("fail MemberRepository.updatePassword");
         }
     }
 
     /**
      * 동일한 username 을 가진 회원 존재 여부 확인
+     *
      * @param username 회원 로그인 id
      * @return true: 중복O / false: 중복X
      */
-    public boolean checkDuplicateUsername(String username) {
-        return mapper.checkDuplicateUsername(username);
+    public boolean existsUsername(String username) {
+        return mapper.existsUsername(username);
     }
 }

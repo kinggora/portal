@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -29,7 +30,7 @@ class MemberServiceTest {
                 .username(id)
                 .password(password)
                 .name(UUID.randomUUID().toString().substring(0, 5))
-                .role(MemberRole.USER)
+                .role(List.of(MemberRole.USER))
                 .build();
         memberService.register(newMember);
 

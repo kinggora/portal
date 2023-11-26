@@ -10,12 +10,14 @@ public interface MemberMapper {
 
     /**
      * 회원 저장
+     *
      * @param member 회원 정보
      */
     void saveMember(Member member);
 
     /**
      * 회원 단건 조회 (id)
+     *
      * @param id 회원 id
      * @return 회원
      */
@@ -23,6 +25,7 @@ public interface MemberMapper {
 
     /**
      * 회원 단건 조회 (username)
+     *
      * @param username 회원 로그인 id
      * @return 회원
      */
@@ -30,13 +33,15 @@ public interface MemberMapper {
 
     /**
      * 동일한 username 을 가진 회원 존재 여부 확인
+     *
      * @param username 회원 로그인 id
      * @return true: 중복O / false: 중복X
      */
-    boolean checkDuplicateUsername(String username);
+    boolean existsUsername(String username);
 
     /**
      * 회원 정보 수정
+     *
      * @param member 수정할 회원 정보
      * @return 변경된 row 수
      */
@@ -44,6 +49,7 @@ public interface MemberMapper {
 
     /**
      * 회원 비밀번호 수정
+     *
      * @param member 수정할 회원 정보
      * @return 변경된 row 수
      */

@@ -1,6 +1,7 @@
 package kinggora.portal.security;
 
 import kinggora.portal.domain.Member;
+import kinggora.portal.domain.type.MemberRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,7 +19,9 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> auth = new ArrayList<>();
-        auth.add(new SimpleGrantedAuthority(member.getRole().getValue()));
+        for (MemberRole role : member.getRole()) {
+            auth.add(new SimpleGrantedAuthority(role.getValue()));
+        }
         return auth;
     }
 

@@ -3,7 +3,6 @@ package kinggora.portal.service;
 import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Member;
 import kinggora.portal.domain.dto.TokenInfo;
-import kinggora.portal.domain.type.MemberRole;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.MemberRepository;
 import kinggora.portal.security.CustomUserDetails;
@@ -40,8 +39,7 @@ public class MemberService implements UserDetailsService {
         if (checkDuplicateUsername(member.getUsername())) {
             throw new BizException(ErrorCode.DUPLICATE_USERNAME);
         }
-        member.setPassword(passwordEncoder.encode(member.getPassword()));
-        member.setRole(MemberRole.USER);
+        member.encodePassword(passwordEncoder.encode(member.getPassword()));
         return memberRepository.saveMember(member);
     }
 
@@ -97,7 +95,7 @@ public class MemberService implements UserDetailsService {
      * @param member   수정할 회원 정보
      */
     public void updatePassword(String password, Member member) {
-        member.setPassword(passwordEncoder.encode(password));
+        member.encodePassword(passwordEncoder.encode(password));
         memberRepository.updatePassword(member);
     }
 
@@ -108,7 +106,7 @@ public class MemberService implements UserDetailsService {
      * @return true: 중복O / false: 중복X
      */
     public boolean checkDuplicateUsername(String username) {
-        return memberRepository.checkDuplicateUsername(username);
+        return memberRepository.existsUsername(username);
     }
 
     /**

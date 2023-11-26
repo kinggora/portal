@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -25,13 +26,14 @@ class MemberRepositoryTest {
                 .username(UUID.randomUUID().toString().substring(0, 8))
                 .password(UUID.randomUUID().toString().substring(0, 8))
                 .name(UUID.randomUUID().toString().substring(0, 5))
-                .role(MemberRole.USER)
+                .role(List.of(MemberRole.ADMIN, MemberRole.USER))
                 .build();
         Integer id = repository.saveMember(member);
         Member findMember = repository.findMemberById(id).get();
         Assertions.assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
         Assertions.assertThat(findMember.getName()).isEqualTo(member.getName());
         Assertions.assertThat(findMember.getPassword()).isEqualTo(member.getPassword());
+        Assertions.assertThat(findMember.getRole()).contains(MemberRole.ADMIN, MemberRole.USER);
     }
 
 }
