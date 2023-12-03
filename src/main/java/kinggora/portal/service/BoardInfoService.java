@@ -16,8 +16,8 @@ public class BoardInfoService {
     private final BoardInfoRepository boardInfoRepository;
 
 
-    public List<BoardInfo> findBoardInfo() {
-        return boardInfoRepository.findBoardInfo();
+    public List<BoardInfo> findBoardInfos() {
+        return boardInfoRepository.findBoardInfos();
     }
 
     public BoardInfo findBoardInfoById(Integer id) {

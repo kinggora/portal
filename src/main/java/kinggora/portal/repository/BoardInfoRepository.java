@@ -22,8 +22,8 @@ public class BoardInfoRepository {
         return mapper.findBoardInfoByName(name);
     }
 
-    public List<BoardInfo> findBoardInfo() {
-        return mapper.findBoardInfo();
+    public List<BoardInfo> findBoardInfos() {
+        return mapper.findBoardInfos();
     }
 
     public Integer saveBoardInfo(BoardInfo boardInfo) {

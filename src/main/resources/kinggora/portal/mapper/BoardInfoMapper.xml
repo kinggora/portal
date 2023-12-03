@@ -12,7 +12,7 @@
         SELECT * FROM board_Info WHERE name=#{name}
     </select>
 
-    <select id="findBoardInfo" resultType="BoardInfo">
+    <select id="findBoardInfos" resultType="BoardInfo">
         SELECT * FROM board_Info
     </select>
 

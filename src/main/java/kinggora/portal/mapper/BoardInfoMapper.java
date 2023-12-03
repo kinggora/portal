@@ -13,7 +13,7 @@ public interface BoardInfoMapper {
 
     Optional<BoardInfo> findBoardInfoByName(String name);
 
-    List<BoardInfo> findBoardInfo();
+    List<BoardInfo> findBoardInfos();
 
     Integer saveBoardInfo(BoardInfo boardInfo);
 }
