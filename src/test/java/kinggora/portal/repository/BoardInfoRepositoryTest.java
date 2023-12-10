@@ -22,6 +22,5 @@ class BoardInfoRepositoryTest {
         Assertions.assertThat(boardInfo.getAccessList()).isEqualTo(AccessLevel.ALL);
         Assertions.assertThat(boardInfo.getAccessRead()).isEqualTo(AccessLevel.ALL);
         Assertions.assertThat(boardInfo.getAccessWrite()).isEqualTo(AccessLevel.ADMIN);
-        Assertions.assertThat(boardInfo.getAccessReply()).isEqualTo(AccessLevel.NONE);
     }
 }

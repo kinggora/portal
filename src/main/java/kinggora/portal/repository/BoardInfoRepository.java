@@ -14,12 +14,16 @@ public class BoardInfoRepository {
 
     private final BoardInfoMapper mapper;
 
-    public Optional<BoardInfo> findBoardInfoById(Integer id) {
+    public Optional<BoardInfo> findBoardInfoById(int id) {
         return mapper.findBoardInfoById(id);
     }
 
     public Optional<BoardInfo> findBoardInfoByName(String name) {
         return mapper.findBoardInfoByName(name);
+    }
+
+    public Optional<BoardInfo> findBoardInfoByPostId(int postId) {
+        return mapper.findBoardInfoByPostId(postId);
     }
 
     public List<BoardInfo> findBoardInfos() {
@@ -30,4 +34,6 @@ public class BoardInfoRepository {
         mapper.saveBoardInfo(boardInfo);
         return boardInfo.getId();
     }
+
+
 }

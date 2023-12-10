@@ -9,9 +9,11 @@ import java.util.Optional;
 @Mapper
 public interface BoardInfoMapper {
 
-    Optional<BoardInfo> findBoardInfoById(Integer id);
+    Optional<BoardInfo> findBoardInfoById(int id);
 
     Optional<BoardInfo> findBoardInfoByName(String name);
+
+    Optional<BoardInfo> findBoardInfoByPostId(int postId);
 
     List<BoardInfo> findBoardInfos();
 

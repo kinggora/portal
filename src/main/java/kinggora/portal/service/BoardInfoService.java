@@ -20,13 +20,18 @@ public class BoardInfoService {
         return boardInfoRepository.findBoardInfos();
     }
 
-    public BoardInfo findBoardInfoById(Integer id) {
+    public BoardInfo findBoardInfoById(int id) {
         return boardInfoRepository.findBoardInfoById(id)
                 .orElseThrow(() -> new BizException(ErrorCode.BOARD_NOT_FOUND));
     }
 
     public BoardInfo findBoardInfoByName(String name) {
         return boardInfoRepository.findBoardInfoByName(name)
+                .orElseThrow(() -> new BizException(ErrorCode.BOARD_NOT_FOUND));
+    }
+
+    public BoardInfo findBoardInfoByPostId(int postId) {
+        return boardInfoRepository.findBoardInfoByPostId(postId)
                 .orElseThrow(() -> new BizException(ErrorCode.BOARD_NOT_FOUND));
     }
 }

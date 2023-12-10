@@ -5,15 +5,23 @@
 <mapper namespace="kinggora.portal.mapper.BoardInfoMapper">
 
     <select id="findBoardInfoById" parameterType="int" resultType="BoardInfo">
-        SELECT * FROM board_Info WHERE id=#{id}
+        SELECT * FROM board_info WHERE id=#{id}
     </select>
 
     <select id="findBoardInfoByName" parameterType="String" resultType="BoardInfo">
-        SELECT * FROM board_Info WHERE name=#{name}
+        SELECT * FROM board_info WHERE name=#{name}
+    </select>
+
+    <select id="findBoardInfoByPostId" parameterType="int" resultType="BoardInfo">
+        SELECT bi.*
+        FROM board_info bi
+        JOIN boards b
+        ON bi.id=b.board_id
+        WHERE b.id=#{postId}
     </select>
 
     <select id="findBoardInfos" resultType="BoardInfo">
-        SELECT * FROM board_Info
+        SELECT * FROM board_info
     </select>
 
     <insert id="saveBoardInfo" useGeneratedKeys="true" keyProperty="id" parameterType="BoardInfo">
