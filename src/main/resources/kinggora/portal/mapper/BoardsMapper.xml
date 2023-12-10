@@ -16,15 +16,21 @@
             <id property="id" column="id"/>
             <result property="name" column="name"/>
             <result property="subject" column="subject"/>
-            <result property="name" column="name"/>
+            <result property="accessList" column="access_list"/>
+            <result property="accessWrite" column="access_write"/>
+            <result property="accessRead" column="access_read"/>
+            <result property="accessReplyRead" column="access_reply_read"/>
+            <result property="accessReplyWrite" column="access_reply_write"/>
+            <result property="accessComment" column="access_comment"/>
+            <result property="accessFile" column="access_file"/>
+            <result property="boardType" column="board_type"/>
         </association>
         <association property="member" javaType="Member" columnPrefix="m_">
             <id property="id" column="id"/>
             <result property="username" column="username"/>
             <result property="password" column="password"/>
             <result property="name" column="name"/>
-            <result property="role" column="role"
-                    typeHandler="kinggora.portal.domain.typehandler.MemberRoleTypeHandler"/>
+            <result property="roles" column="roles" typeHandler="MemberRolesTypeHandler"/>
         </association>
         <association property="category" javaType="Category" columnPrefix="c_">
             <id property="id" column="id"/>
@@ -32,6 +38,7 @@
         </association>
     </resultMap>
     <resultMap id="CommonPost" type="CommonPost" extends="Post">
+        <result property="countComment" column="count_comment"/>
         <association property="fileInfo" javaType="FileInfo">
             <result property="attached" column="attached"/>
             <result property="imaged" column="imaged"/>
@@ -79,14 +86,41 @@
         , bi.id AS bi_id
         , bi.name AS bi_name
         , bi.subject AS bi_subject
+        , bi.access_list AS bi_access_list
+        , bi.access_write AS bi_access_write
+        , bi.access_read AS bi_access_read
+        , bi.access_reply_read AS bi_access_reply_read
+        , bi.access_reply_write AS bi_access_reply_write
+        , bi.access_comment AS bi_access_comment
+        , bi.access_file AS bi_access_file
+        , bi.board_type AS bi_board_type
         , c.id AS c_id
         , c.name AS c_name
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
-        , m.role AS m_role
+        , m.roles AS m_roles
         FROM boards b, member m, category c, board_info bi
         WHERE b.id=#{id} and b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id
+    </select>
+
+    <select id="findPostByFileId" parameterType="int" resultMap="Post">
+        SELECT
+        b.id
+        , b.title
+        , b.content
+        , b.reg_date
+        , b.mod_date
+        , b.hit
+        , b.del_flag
+        , m.id AS m_id
+        , m.username AS m_username
+        , m.name AS m_name
+        , m.roles AS m_roles
+        FROM member m, boards b
+        JOIN file f
+        ON f.post_id=b.id
+        WHERE f.id=#{fileId} and b.member_id=m.id
     </select>
 
     <update id="hitUp" parameterType="int">
@@ -99,37 +133,34 @@
         WHERE id=#{id}
     </update>
 
-    <delete id="deletePost" parameterType="int">
+    <delete id="deletePostById" parameterType="int">
         UPDATE boards
         SET del_flag=true, mod_date=NOW()
         WHERE id=#{id} AND del_flag=false
     </delete>
 
-    <select id="findPosts" parameterType="map" resultMap="CommonPost">
+    <select id="findCommonPosts" parameterType="map" resultMap="CommonPost">
         SELECT
         b.id
         , b.title
-        , b.content
         , b.reg_date
         , b.mod_date
         , b.hit
-        , bi.id AS bi_id
-        , bi.name AS bi_name
-        , bi.subject AS bi_subject
+        , b.board_id AS bi_id
         , c.id AS c_id
         , c.name AS c_name
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
-        , m.role AS m_role
+        , m.roles AS m_roles
         , (SELECT EXISTS (SELECT id FROM file f WHERE b.id=f.post_id AND f.del_flag=false AND f.type='A' LIMIT 1)) AS
         attached
         , (SELECT EXISTS (SELECT id FROM file f WHERE b.id=f.post_id AND f.del_flag=false AND f.type='C' LIMIT 1)) AS
         imaged
         , (SELECT store_dir FROM file f WHERE b.id=f.post_id AND f.del_flag=false AND f.type='T' LIMIT 1) AS thumb_url
-        FROM boards b, member m, category c, board_info bi
-        WHERE b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id AND
-        b.del_flag=false
+        , (SELECT COUNT(id) FROM comment cm WHERE b.id=cm.post_id) AS count_comment
+        FROM boards b, member m, category c
+        WHERE b.member_id=m.id and b.category_id=c.id AND b.del_flag=false
         <if test="criteria.boardId != null">
             AND b.board_id=#{criteria.boardId}
         </if>
@@ -186,27 +217,23 @@
         SELECT EXISTS (SELECT id FROM boards WHERE parent=#{id} AND del_flag=false LIMIT 1)
     </select>
 
-    <select id="findQuestions" parameterType="map" resultMap="QnaPost">
+    <select id="findQnaPosts" parameterType="map" resultMap="QnaPost">
         SELECT
         b.id
         , b.title
-        , b.content
         , b.reg_date
         , b.mod_date
         , b.hit
-        , bi.id AS bi_id
-        , bi.name AS bi_name
-        , bi.subject AS bi_subject
+        , b.board_id AS bi_id
         , c.id AS c_id
         , c.name AS c_name
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
-        , m.role AS m_role
+        , m.roles AS m_roles
         , (SELECT EXISTS (SELECT id FROM boards a WHERE a.parent=b.id LIMIT 1)) AS existsChild
-        FROM boards b, member m, category c, board_info bi
-        WHERE b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id AND
-        b.del_flag=false AND b.parent IS NULL
+        FROM boards b, member m, category c
+        WHERE b.member_id=m.id and b.category_id=c.id AND b.del_flag=false AND b.parent IS NULL
         <if test="criteria.boardId != null">
             AND b.board_id=#{criteria.boardId}
         </if>
@@ -248,10 +275,18 @@
         , m.id AS m_id
         , m.username AS m_username
         , m.name AS m_name
-        , m.role AS m_role
+        , m.roles AS m_roles
         FROM boards b, member m, category c, board_info bi
         WHERE b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id
         AND b.parent=#{id} AND b.del_flag=false
+    </select>
+
+    <select id="existById" parameterType="int" resultType="boolean">
+        SELECT EXISTS (
+        SELECT id
+        FROM boards
+        WHERE id=#{id} AND del_flag=false
+        )
     </select>
 
 </mapper>

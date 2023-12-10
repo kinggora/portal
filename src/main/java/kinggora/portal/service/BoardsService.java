@@ -4,9 +4,9 @@ import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.CommonPost;
 import kinggora.portal.domain.Post;
 import kinggora.portal.domain.QnaPost;
-import kinggora.portal.domain.dto.PageInfo;
-import kinggora.portal.domain.dto.PagingCriteria;
-import kinggora.portal.domain.dto.SearchCriteria;
+import kinggora.portal.domain.dto.request.PagingCriteria;
+import kinggora.portal.domain.dto.request.SearchCriteria;
+import kinggora.portal.domain.dto.response.PageInfo;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.BoardsRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -34,6 +33,17 @@ public class BoardsService {
     }
 
     /**
+     * 자식 게시글 저장
+     *
+     * @param post
+     * @return
+     */
+    public int saveChildPost(Post post) {
+        checkExistById(post.getParent());
+        return boardsRepository.savePost(post);
+    }
+
+    /**
      * 게시글 수정
      *
      * @param post 수정할 데이터
@@ -47,8 +57,8 @@ public class BoardsService {
      *
      * @param id 게시글 id
      */
-    public void deletePost(Integer id) {
-        boardsRepository.deletePost(id);
+    public void deletePostById(int id) {
+        boardsRepository.deletePostById(id);
     }
 
     /**
@@ -57,12 +67,24 @@ public class BoardsService {
      * @param id 게시글 id
      * @return 게시글 정보
      */
-    public Post findPostById(Integer id) {
-        Optional<Post> optional = boardsRepository.findPostById(id);
-        if (optional.isEmpty()) {
-            throw new BizException(ErrorCode.POST_NOT_FOUND);
+    public Post findPostById(int id) {
+        Post post = boardsRepository.findPostById(id)
+                .orElseThrow(() -> new BizException(ErrorCode.POST_NOT_FOUND));
+        if (post.isDeleted()) {
+            throw new BizException(ErrorCode.ALREADY_DELETED_POST);
         }
-        Post post = optional.get();
+        return post;
+    }
+
+    /**
+     * 해당 파일이 포함된 게시물 조회
+     *
+     * @param fileId 파일 id
+     * @return 게시글 정보
+     */
+    public Post findPostByFileId(int fileId) {
+        Post post = boardsRepository.findPostByFileId(fileId)
+                .orElseThrow(() -> new BizException(ErrorCode.POST_NOT_FOUND));
         if (post.isDeleted()) {
             throw new BizException(ErrorCode.ALREADY_DELETED_POST);
         }
@@ -76,9 +98,9 @@ public class BoardsService {
      * @param searchCriteria 검색 조건
      * @return 게시글 리스트
      */
-    public List<CommonPost> findPosts(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
+    public List<CommonPost> findCommonPosts(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
         int startRow = (pagingCriteria.getPage() - 1) * pagingCriteria.getSize();
-        return boardsRepository.findPosts(searchCriteria, startRow, pagingCriteria.getSize());
+        return boardsRepository.findCommonPosts(searchCriteria, startRow, pagingCriteria.getSize());
     }
 
     /**
@@ -89,9 +111,9 @@ public class BoardsService {
      * @param searchCriteria 검색 조건
      * @return 게시글 리스트
      */
-    public List<QnaPost> findQuestions(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
+    public List<QnaPost> findQnaPosts(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
         int startRow = (pagingCriteria.getPage() - 1) * pagingCriteria.getSize();
-        return boardsRepository.findQuestions(searchCriteria, startRow, pagingCriteria.getSize());
+        return boardsRepository.findQnaPosts(searchCriteria, startRow, pagingCriteria.getSize());
     }
 
     /**
@@ -137,4 +159,11 @@ public class BoardsService {
             boardsRepository.updatePost(post);
         }
     }
+
+    public void checkExistById(int id) {
+        if (boardsRepository.existById(id)) {
+            throw new BizException(ErrorCode.POST_NOT_FOUND);
+        }
+    }
+
 }
