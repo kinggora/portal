@@ -4,8 +4,7 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kinggora.portal.mapper.MemberMapper">
     <resultMap id="Member" type="Member">
-        <result property="role" column="role" javaType="java.util.List"
-                jdbcType="VARCHAR" typeHandler="MemberRoleTypeHandler"/>
+        <result column="roles" property="roles" typeHandler="MemberRolesTypeHandler"/>
     </resultMap>
 
     <insert id="saveMember" parameterType="Member" useGeneratedKeys="true" keyProperty="id">
@@ -13,12 +12,12 @@
         username
         , password
         , name
-        , role
+        , roles
         ) VALUES (
         #{username}
         , #{password}
         , #{name}
-        , #{role, typeHandler=MemberRoleTypeHandler}
+        , #{roles,typeHandler=MemberRolesTypeHandler}
         )
     </insert>
 
@@ -47,7 +46,7 @@
         UPDATE member SET name=#{name} WHERE id=#{id}
     </update>
 
-    <update id="updatePassword" parameterType="Member">
+    <update id="updatePassword" parameterType="Map">
         UPDATE member SET password=#{password} WHERE id=#{id}
     </update>
 

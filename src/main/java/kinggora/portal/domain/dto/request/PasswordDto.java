@@ -1,6 +1,9 @@
-package kinggora.portal.domain.dto;
+package kinggora.portal.domain.dto.request;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
@@ -8,5 +11,4 @@ import lombok.*;
 public class PasswordDto {
     private String currentPassword;
     private String newPassword;
-
 }

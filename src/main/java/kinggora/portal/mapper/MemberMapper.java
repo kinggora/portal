@@ -2,6 +2,7 @@ package kinggora.portal.mapper;
 
 import kinggora.portal.domain.Member;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.Optional;
 
@@ -50,8 +51,9 @@ public interface MemberMapper {
     /**
      * 회원 비밀번호 수정
      *
-     * @param member 수정할 회원 정보
+     * @param id       수정할 회원 id
+     * @param password 암호화된 새 비밀번호
      * @return 변경된 row 수
      */
-    int updatePassword(Member member);
+    int updatePassword(@Param("id") int id, @Param("password") String password);
 }

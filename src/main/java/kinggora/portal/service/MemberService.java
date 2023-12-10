@@ -2,26 +2,22 @@ package kinggora.portal.service;
 
 import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Member;
-import kinggora.portal.domain.dto.TokenInfo;
+import kinggora.portal.domain.dto.response.TokenInfo;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.MemberRepository;
-import kinggora.portal.security.CustomUserDetails;
 import kinggora.portal.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MemberService implements UserDetailsService {
+public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
@@ -91,12 +87,12 @@ public class MemberService implements UserDetailsService {
     /**
      * 회원 비밀번호 수정
      *
+     * @param id       비밀번호를 수정할 회원 id
      * @param password 새 비밀번호 (암호화 전)
-     * @param member   수정할 회원 정보
      */
-    public void updatePassword(String password, Member member) {
-        member.encodePassword(passwordEncoder.encode(password));
-        memberRepository.updatePassword(member);
+    public void updatePassword(int id, String password) {
+        String encodedNewPassword = passwordEncoder.encode(password);
+        memberRepository.updatePassword(id, encodedNewPassword);
     }
 
     /**
@@ -112,19 +108,12 @@ public class MemberService implements UserDetailsService {
     /**
      * 비밀번호 확인
      *
-     * @param password 확인할 비밀번호
-     * @param member   기존 회원 정보
+     * @param rawPassword     암호화 되지 않은 비밀번호
+     * @param encodedPassword 암호화된 비밀번호
      * @return true: 비밀번호 일치, false: 비밀번호 미일치
      */
-    public boolean checkPassword(String password, Member member) {
-        return passwordEncoder.matches(password, member.getPassword());
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) {
-        Member member = memberRepository.findMemberByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(username));
-        return new CustomUserDetails(member);
+    public boolean checkPassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
 }

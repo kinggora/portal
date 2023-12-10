@@ -1,4 +1,4 @@
-package kinggora.portal.domain.dto;
+package kinggora.portal.domain.dto.request;
 
 import kinggora.portal.domain.Member;
 import kinggora.portal.domain.type.MemberRole;
@@ -15,7 +15,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberDto {
 
-    private Integer id;
     @NotNull(message = "{require.member.username}")
     @Pattern(regexp = "^[a-z]{1}[a-z0-9]{5,9}+$", message = "{pattern.member.username}")
     private String username;
@@ -28,21 +27,26 @@ public class MemberDto {
 
     public Member toUser() {
         return Member.builder()
-                .id(id)
                 .username(username)
                 .name(name)
                 .password(password)
-                .role(List.of(MemberRole.USER))
+                .roles(List.of(MemberRole.USER))
+                .build();
+    }
+
+    public Member toUpdateMember(int id) {
+        return Member.builder()
+                .id(id)
+                .name(name)
                 .build();
     }
 
     public Member toAdmin() {
         return Member.builder()
-                .id(id)
                 .username(username)
                 .name(name)
                 .password(password)
-                .role(List.of(MemberRole.ADMIN, MemberRole.USER))
+                .roles(List.of(MemberRole.ADMIN, MemberRole.USER))
                 .build();
     }
 

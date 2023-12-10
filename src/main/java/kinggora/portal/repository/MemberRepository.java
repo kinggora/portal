@@ -57,8 +57,8 @@ public class MemberRepository {
         }
     }
 
-    public void updatePassword(Member member) {
-        if (mapper.updatePassword(member) != 1) {
+    public void updatePassword(int id, String password) {
+        if (mapper.updatePassword(id, password) != 1) {
             log.error("fail MemberRepository.updatePassword");
         }
     }

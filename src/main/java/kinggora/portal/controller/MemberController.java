@@ -3,9 +3,9 @@ package kinggora.portal.controller;
 import kinggora.portal.api.DataResponse;
 import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Member;
-import kinggora.portal.domain.dto.MemberDto;
-import kinggora.portal.domain.dto.PasswordDto;
-import kinggora.portal.domain.dto.TokenInfo;
+import kinggora.portal.domain.dto.request.MemberDto;
+import kinggora.portal.domain.dto.request.PasswordDto;
+import kinggora.portal.domain.dto.response.TokenInfo;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.service.MemberService;
 import kinggora.portal.util.SecurityUtil;
@@ -40,20 +40,19 @@ public class MemberController {
     @PutMapping
     public DataResponse<Void> updateMember(@Valid MemberDto member) {
         Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
-        member.setId(signInMember.getId());
-        memberService.updateMember(member.toUser());
+        memberService.updateMember(member.toUpdateMember(signInMember.getId()));
         return DataResponse.empty();
     }
 
     @PutMapping("/password")
     public DataResponse<Void> updatePassword(PasswordDto dto) {
         Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
-        if (!memberService.checkPassword(dto.getCurrentPassword(), signInMember)) {
+        if (!memberService.checkPassword(dto.getCurrentPassword(), signInMember.getPassword())) {
             throw new BizException(ErrorCode.INVALID_PASSWORD);
-        } else if (!memberService.checkPassword(dto.getNewPassword(), signInMember)) {
+        } else if (memberService.checkPassword(dto.getNewPassword(), signInMember.getPassword())) {
             throw new BizException(ErrorCode.DUPLICATE_PASSWORD);
         }
-        memberService.updatePassword(dto.getNewPassword(), signInMember);
+        memberService.updatePassword(signInMember.getId(), dto.getNewPassword());
         return DataResponse.empty();
     }
 

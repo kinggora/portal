@@ -1,6 +1,6 @@
 package kinggora.portal.domain;
 
-import kinggora.portal.domain.dto.MemberDto;
+import kinggora.portal.domain.dto.request.MemberDto;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -194,5 +194,4 @@ class MemberDtoValidationTest {
             );
         }
     }
-
 }

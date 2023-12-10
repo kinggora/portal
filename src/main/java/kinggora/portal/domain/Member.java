@@ -16,7 +16,7 @@ public class Member {
     private String username;
     private String password;
     private String name;
-    private List<MemberRole> role;
+    private List<MemberRole> roles;
 
     public Member(Integer id) {
         this.id = id;

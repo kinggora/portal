@@ -1,7 +1,7 @@
 package kinggora.portal.service;
 
 import kinggora.portal.domain.Member;
-import kinggora.portal.domain.dto.TokenInfo;
+import kinggora.portal.domain.dto.response.TokenInfo;
 import kinggora.portal.domain.type.MemberRole;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -30,7 +30,7 @@ class MemberServiceTest {
                 .username(id)
                 .password(password)
                 .name(UUID.randomUUID().toString().substring(0, 5))
-                .role(List.of(MemberRole.USER))
+                .roles(List.of(MemberRole.USER))
                 .build();
         memberService.register(newMember);
 
