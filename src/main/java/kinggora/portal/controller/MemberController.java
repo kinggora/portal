@@ -1,16 +1,15 @@
 package kinggora.portal.controller;
 
 import kinggora.portal.api.DataResponse;
-import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Member;
 import kinggora.portal.domain.dto.request.MemberDto;
 import kinggora.portal.domain.dto.request.PasswordDto;
-import kinggora.portal.domain.dto.response.TokenInfo;
-import kinggora.portal.exception.BizException;
+import kinggora.portal.domain.dto.response.MemberResponse;
+import kinggora.portal.security.CustomUserDetails;
 import kinggora.portal.service.MemberService;
-import kinggora.portal.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -24,42 +23,36 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping
-    public DataResponse<Void> createMember(@Valid MemberDto member) {
-        memberService.register(member.toUser());
+    public DataResponse<Void> createMember(@Valid MemberDto dto) {
+        memberService.createMember(dto);
         return DataResponse.empty();
     }
 
     @GetMapping
-    public DataResponse<Member> getMember() {
-        Member member = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
-        member.removePassword();
+    public DataResponse<MemberResponse> getMember(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Member member = userDetails.getMember();
         log.info("loginMember={}", member.getUsername());
-        return DataResponse.of(member);
+        return DataResponse.of(MemberResponse.of(member));
     }
 
-    @PutMapping
-    public DataResponse<Void> updateMember(@Valid MemberDto member) {
-        Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
-        memberService.updateMember(member.toUpdateMember(signInMember.getId()));
+    @PatchMapping
+    public DataResponse<Void> updateMember(@Valid MemberDto dto,
+                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.updateMember(userDetails.getId(), dto);
         return DataResponse.empty();
     }
 
-    @PutMapping("/password")
-    public DataResponse<Void> updatePassword(PasswordDto dto) {
-        Member signInMember = memberService.findMemberByUsername(SecurityUtil.getCurrentUsername());
-        if (!memberService.checkPassword(dto.getCurrentPassword(), signInMember.getPassword())) {
-            throw new BizException(ErrorCode.INVALID_PASSWORD);
-        } else if (memberService.checkPassword(dto.getNewPassword(), signInMember.getPassword())) {
-            throw new BizException(ErrorCode.DUPLICATE_PASSWORD);
-        }
-        memberService.updatePassword(signInMember.getId(), dto.getNewPassword());
+    @PatchMapping("/password")
+    public DataResponse<Void> updatePassword(@Valid PasswordDto dto,
+                                             @AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.updatePassword(userDetails.getMember(), dto);
         return DataResponse.empty();
     }
 
-    @PostMapping("/signin")
-    public DataResponse<TokenInfo> signIn(Member member) {
-        TokenInfo tokenInfo = memberService.signIn(member);
-        log.info("access token={}", tokenInfo.getAccessToken());
-        return DataResponse.of(tokenInfo);
+    @DeleteMapping
+    public DataResponse<Void> deleteMember(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.deleteMember(userDetails.getId());
+        return DataResponse.empty();
     }
+
 }
