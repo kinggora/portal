@@ -11,10 +11,6 @@ public interface BoardInfoMapper {
 
     Optional<BoardInfo> findBoardInfoById(int id);
 
-    Optional<BoardInfo> findBoardInfoByName(String name);
-
-    Optional<BoardInfo> findBoardInfoByPostId(int postId);
-
     List<BoardInfo> findBoardInfos();
 
     Integer saveBoardInfo(BoardInfo boardInfo);

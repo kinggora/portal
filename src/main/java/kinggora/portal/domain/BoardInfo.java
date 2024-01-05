@@ -23,6 +23,7 @@ public class BoardInfo {
     private AccessLevel accessComment;
     private AccessLevel accessFile;
     private String boardType;
+    private boolean allowSecret;
 
     public BoardInfo(int id) {
         this.id = id;

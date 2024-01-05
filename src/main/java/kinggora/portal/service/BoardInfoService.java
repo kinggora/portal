@@ -5,10 +5,12 @@ import kinggora.portal.domain.BoardInfo;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.BoardInfoRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BoardInfoService {
@@ -25,13 +27,4 @@ public class BoardInfoService {
                 .orElseThrow(() -> new BizException(ErrorCode.BOARD_NOT_FOUND));
     }
 
-    public BoardInfo findBoardInfoByName(String name) {
-        return boardInfoRepository.findBoardInfoByName(name)
-                .orElseThrow(() -> new BizException(ErrorCode.BOARD_NOT_FOUND));
-    }
-
-    public BoardInfo findBoardInfoByPostId(int postId) {
-        return boardInfoRepository.findBoardInfoByPostId(postId)
-                .orElseThrow(() -> new BizException(ErrorCode.BOARD_NOT_FOUND));
-    }
 }
