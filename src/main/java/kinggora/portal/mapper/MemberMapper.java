@@ -56,4 +56,6 @@ public interface MemberMapper {
      * @return 변경된 row 수
      */
     int updatePassword(@Param("id") int id, @Param("password") String password);
+
+    int deleteMember(int id);
 }

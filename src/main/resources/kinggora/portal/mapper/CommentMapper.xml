@@ -3,24 +3,18 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kinggora.portal.mapper.CommentMapper">
-    <resultMap id="Comment" type="Comment">
+    <resultMap id="CommentResponse" type="CommentResponse">
         <id property="id" column="id"/>
         <result property="postId" column="post_id"/>
         <result property="content" column="content"/>
-        <result property="ref" column="ref"/>
-        <result property="refOrder" column="ref_order"/>
-        <result property="parent" column="parent"/>
         <result property="depth" column="depth"/>
         <result property="regDate" column="reg_date"/>
         <result property="modDate" column="mod_date"/>
-        <result property="deleted" column="del_flag"/>
-        <association property="member" javaType="Member" columnPrefix="m_">
-            <id property="id" column="id"/>
+        <result property="deleted" column="deleted"/>
+        <association property="member" javaType="MemberResponse" columnPrefix="m_">
             <result property="username" column="username"/>
-            <result property="password" column="password"/>
             <result property="name" column="name"/>
-            <result property="role" column="role"
-                    typeHandler="kinggora.portal.domain.typehandler.MemberRoleTypeHandler"/>
+            <result property="roles" column="roles" typeHandler="MemberRolesTypeHandler"/>
         </association>
     </resultMap>
 
@@ -34,10 +28,10 @@
         , depth
         , ref
         , ref_order
-        , del_flag
+        , deleted
         ) VALUES (
         #{postId}
-        , #{member.id}
+        , #{memberId}
         , #{content}
         , NOW()
         , #{parent}
@@ -58,40 +52,24 @@
         WHERE ref=#{ref} AND (ref_order > #{refOrder} OR ref_order = #{refOrder})
     </update>
 
-    <select id="findCommentById" parameterType="int" resultMap="Comment">
-        SELECT
-        c.id
-        , c.post_id
-        , c.content
-        , c.reg_date
-        , c.parent
-        , c.depth
-        , c.ref
-        , c.ref_order
-        , c.del_flag
-        , m.id AS m_id
-        , m.username AS m_username
-        , m.name AS m_name
-        , m.role AS m_role
-        FROM comment c JOIN member m
-        WHERE c.id=#{id} AND c.member_id=m.id
+    <select id="findCommentById" parameterType="int" resultType="Comment">
+        SELECT *
+        FROM comment
+        WHERE id=#{id}
     </select>
 
-    <select id="findComments" parameterType="map" resultMap="Comment">
+    <select id="findComments" parameterType="map" resultMap="CommentResponse">
         SELECT
         c.id
         , c.post_id
         , c.content
         , c.reg_date
-        , c.parent
+        , c.mod_date
         , c.depth
-        , c.ref
-        , c.ref_order
-        , c.del_flag
-        , m.id AS m_id
+        , c.deleted
         , m.username AS m_username
         , m.name AS m_name
-        , m.role AS m_role
+        , m.roles AS m_roles
         FROM comment c JOIN member m
         WHERE c.post_id=#{postId} AND c.member_id=m.id
         ORDER BY ref, ref_order
@@ -105,8 +83,8 @@
 
     <update id="hideComment" parameterType="int">
         UPDATE comment
-        SET del_flag=true, mod_date=NOW()
-        WHERE id=#{id} AND del_flag=true
+        SET deleted=true, mod_date=NOW()
+        WHERE id=#{id}
     </update>
 
     <update id="deleteComment" parameterType="int">
@@ -120,6 +98,12 @@
         WHERE parent=#{id}
         LIMIT 1
         )
+    </select>
+
+    <select id="findChildCount" parameterType="int" resultType="int">
+        SELECT COUNT(id)
+        FROM comment
+        WHERE parent=#{parentId}
     </select>
 
     <select id="isOnlyMinimumDepth" parameterType="Comment" resultType="boolean">

@@ -1,6 +1,7 @@
 package kinggora.portal.mapper;
 
 import kinggora.portal.domain.Comment;
+import kinggora.portal.domain.dto.response.CommentResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -70,7 +71,7 @@ public interface CommentMapper {
      * @param postId 게시글 id
      * @return 댓글 리스트
      */
-    List<Comment> findComments(Integer postId);
+    List<CommentResponse> findComments(Integer postId);
 
     /**
      * @param id 댓글 id
@@ -83,5 +84,8 @@ public interface CommentMapper {
      * @return true: 대댓글 존재o, false: 대댓글 존재x
      */
     boolean childExists(Integer id);
+
+    int findChildCount(int parentId);
+
 }
 

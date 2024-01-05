@@ -2,6 +2,7 @@ package kinggora.portal.repository;
 
 import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Comment;
+import kinggora.portal.domain.dto.response.CommentResponse;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.mapper.CommentMapper;
 import lombok.RequiredArgsConstructor;
@@ -103,7 +104,7 @@ public class CommentRepository {
      * @param postId 게시글 id
      * @return 댓글 리스트
      */
-    public List<Comment> findComments(int postId) {
+    public List<CommentResponse> findComments(int postId) {
         return mapper.findComments(postId);
     }
 
@@ -152,4 +153,9 @@ public class CommentRepository {
     public boolean childExists(Integer id) {
         return mapper.childExists(id);
     }
+
+    public int findChildCount(int parentId) {
+        return mapper.findChildCount(parentId);
+    }
+
 }

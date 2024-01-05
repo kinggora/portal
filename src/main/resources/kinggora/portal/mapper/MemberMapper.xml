@@ -13,11 +13,13 @@
         , password
         , name
         , roles
+        , deleted
         ) VALUES (
         #{username}
         , #{password}
         , #{name}
         , #{roles,typeHandler=MemberRolesTypeHandler}
+        , #{deleted}
         )
     </insert>
 
@@ -48,6 +50,10 @@
 
     <update id="updatePassword" parameterType="Map">
         UPDATE member SET password=#{password} WHERE id=#{id}
+    </update>
+
+    <update id="deleteMember" parameterType="int">
+        UPDATE member SET deleted=true WHERE id=#{id}
     </update>
 
 </mapper>

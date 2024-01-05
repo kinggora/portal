@@ -2,7 +2,8 @@ package kinggora.portal.service;
 
 import kinggora.portal.api.ErrorCode;
 import kinggora.portal.domain.Comment;
-import kinggora.portal.domain.dto.CommentDto;
+import kinggora.portal.domain.dto.request.CommentDto;
+import kinggora.portal.domain.dto.response.CommentResponse;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class CommentService {
      * @param dto 사용자 입력 데이터
      * @return 댓글 id
      */
-    public int saveComment(CommentDto dto) {
+    public int saveRootComment(CommentDto dto) {
         int ref = commentRepository.findMaxRef() + 1;
         Comment comment = dto.toRootComment(ref);
         return commentRepository.saveComment(comment);
@@ -41,44 +42,65 @@ public class CommentService {
      * @param dto      사용자 입력 데이터
      * @return 댓글 id
      */
-    public int saveChildComment(Integer parentId, CommentDto dto) {
+    public int saveChildComment(int parentId, CommentDto dto) {
         Comment parent = findCommentById(parentId);
+        if (parent.isDeleted()) {
+            throw new BizException(ErrorCode.ALREADY_DELETED_COMMENT, "부모가 이미 삭제된 댓글입니다.");
+        }
         int refOrder = findRefOrder(parent);
-        Comment comment = dto.toChildComment(parent, refOrder);
+        Comment comment = dto.toChildComment(refOrder, parent);
         return commentRepository.saveComment(comment);
     }
 
-    public Comment findCommentById(Integer id) {
-        Optional<Comment> optional = commentRepository.findCommentById(id);
-        if (optional.isEmpty()) {
-            throw new BizException(ErrorCode.COMMENT_NOT_FOUND);
-        }
-        Comment comment = optional.get();
-        if (comment.isDeleted()) {
-            throw new BizException(ErrorCode.ALREADY_DELETED_COMMENT);
-        }
-        return comment;
+    public Comment findCommentById(int id) {
+        return commentRepository.findCommentById(id).orElseThrow(
+                () -> new BizException(ErrorCode.COMMENT_NOT_FOUND));
     }
 
-    public void updateComment(CommentDto dto) {
-        commentRepository.updateComment(dto.toUpdateComment());
+    public void updateComment(int id, CommentDto dto) {
+        commentRepository.updateComment(dto.toUpdateComment(id));
     }
 
-    public List<Comment> findComments(Integer postId) {
+    public List<CommentResponse> findComments(int postId) {
         return commentRepository.findComments(postId);
     }
 
     /**
-     * 삭제 대상이 자식이 있으면 숨김 처리, 없으면 삭제
-     *
-     * @param id
+     * 댓글 삭제
+     * 삭제 대상이 자식이 있으면 숨김 처리, 없으면 조상에서 함께 삭제할 댓글 탐색
      */
-    public void deleteComment(Integer id) {
+    public void deleteComment(int id) {
+        Comment comment = findCommentById(id);
+        if (comment.isDeleted()) {
+            throw new BizException(ErrorCode.ALREADY_DELETED_COMMENT);
+        }
         if (commentRepository.childExists(id)) {
             commentRepository.hideComment(id);
         } else {
-            commentRepository.deleteComment(id);
+            deleteAncestorComment(comment);
         }
+    }
+
+    /**
+     * 삭제할 수 있는 댓글을 재귀적으로 반환
+     * 삭제 대상의 부모가 존재하지 않는다면 comment 만 삭제
+     * 부모가 다음 조건을 모두 만족 시 함께 삭제
+     * 1. parent.deleted == true
+     * 2. count(parent.children) == 1
+     *
+     * @param comment 재귀적으로 조상까지 삭제할 수 있는지 탐색하고자 하는 대상
+     */
+    private void deleteAncestorComment(Comment comment) {
+        if (comment.getParent() != null) {
+            Optional<Comment> optionalParent = commentRepository.findCommentById(comment.getParent());
+            if (optionalParent.isPresent()) {
+                Comment parent = optionalParent.get();
+                if (parent.isDeleted() && commentRepository.findChildCount(parent.getId()) == 1) {
+                    deleteAncestorComment(parent);
+                }
+            }
+        }
+        commentRepository.deleteComment(comment.getId());
     }
 
     /**

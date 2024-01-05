@@ -63,6 +63,12 @@ public class MemberRepository {
         }
     }
 
+    public void deleteMember(int id) {
+        if (mapper.deleteMember(id) != 1) {
+            log.error("fail MemberRepository.deleteMember");
+        }
+    }
+
     /**
      * 동일한 username 을 가진 회원 존재 여부 확인
      *
