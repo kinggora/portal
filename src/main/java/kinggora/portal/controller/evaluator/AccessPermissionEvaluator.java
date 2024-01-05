@@ -1,10 +1,12 @@
 package kinggora.portal.controller.evaluator;
 
 import kinggora.portal.domain.BoardInfo;
+import kinggora.portal.domain.Post;
 import kinggora.portal.domain.dto.request.Id;
 import kinggora.portal.domain.type.AccessLevel;
 import kinggora.portal.domain.type.MemberRole;
 import kinggora.portal.service.BoardInfoService;
+import kinggora.portal.service.BoardsService;
 import kinggora.portal.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,13 +21,16 @@ import java.util.Collection;
 public class AccessPermissionEvaluator {
 
     private final BoardInfoService boardInfoService;
+    private final BoardsService boardsService;
+    private final SecurityUtil securityUtil;
 
     public boolean hasPermissionToPost(Object targetDomainObject, Object permission) {
         if (!(targetDomainObject instanceof Id) || !(permission instanceof String)) {
             return false;
         }
         Id postId = (Id) targetDomainObject;
-        BoardInfo boardInfo = boardInfoService.findBoardInfoByPostId(postId.getId());
+        Post post = boardsService.findPostById(postId.getId());
+        BoardInfo boardInfo = boardInfoService.findBoardInfoById(post.getBoardId());
         return checkPermission(boardInfo, (String) permission);
     }
 
@@ -66,10 +71,10 @@ public class AccessPermissionEvaluator {
             return false;
         }
         if (AccessLevel.USER.equals(accessLevel)) {
-            return findAuthority(SecurityUtil.getAuthorities(), MemberRole.USER.getCode());
+            return findAuthority(securityUtil.getAuthorities(), MemberRole.USER.getCode());
         }
         if (AccessLevel.ADMIN.equals(accessLevel)) {
-            return findAuthority(SecurityUtil.getAuthorities(), MemberRole.ADMIN.getCode());
+            return findAuthority(securityUtil.getAuthorities(), MemberRole.ADMIN.getCode());
         }
         return false;
     }

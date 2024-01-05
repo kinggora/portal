@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class OwnerPermissionEvaluator {
     private final BoardsService boardsService;
     private final CommentService commentService;
+    private final SecurityUtil securityUtil;
 
 
     public boolean hasPermissionToPost(Object targetDomainObject) {
@@ -22,10 +23,7 @@ public class OwnerPermissionEvaluator {
         }
         Id postId = (Id) targetDomainObject;
         Post post = boardsService.findPostById(postId.getId());
-        if (SecurityUtil.getCurrentUsername().equals(post.getMember().getUsername())) {
-            return true;
-        }
-        return false;
+        return securityUtil.getCurrentMemberId().equals(post.getMemberId());
     }
 
     public boolean hasPermissionToComment(Object targetDomainObject) {
@@ -34,10 +32,7 @@ public class OwnerPermissionEvaluator {
         }
         Id commentId = (Id) targetDomainObject;
         Comment comment = commentService.findCommentById(commentId.getId());
-        if (SecurityUtil.getCurrentUsername().equals(comment.getMember().getUsername())) {
-            return true;
-        }
-        return false;
+        return securityUtil.getCurrentMemberId().equals(comment.getMemberId());
     }
 
     public boolean hasPermissionToFile(Object targetDomainObject) {
@@ -46,10 +41,7 @@ public class OwnerPermissionEvaluator {
         }
         Id fileId = (Id) targetDomainObject;
         Post post = boardsService.findPostByFileId(fileId.getId());
-        if (SecurityUtil.getCurrentUsername().equals(post.getMember().getUsername())) {
-            return true;
-        }
-        return false;
+        return securityUtil.getCurrentMemberId().equals(post.getMemberId());
     }
 
 }
