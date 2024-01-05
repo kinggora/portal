@@ -1,40 +1,37 @@
-package kinggora.portal.domain.dto;
+package kinggora.portal.domain.dto.request;
 
 import kinggora.portal.domain.Comment;
-import kinggora.portal.domain.Member;
-import lombok.*;
+import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-@Getter
-@Setter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Data
 public class CommentDto {
 
-    private Integer id;
-    @NotNull
-    private Integer postId;
-    private Integer memberId;
     @NotBlank
     @Size(min = 1, max = 1000)
     private String content;
+    private int postId;
+    private int memberId;
 
-    public Comment toUpdateComment() {
+    public void injectIds(int postId, int memberId) {
+        this.postId = postId;
+        this.memberId = memberId;
+    }
+
+    public Comment toUpdateComment(int id) {
         return Comment.builder()
                 .id(id)
-                .postId(postId)
                 .content(content)
                 .build();
     }
 
+
     public Comment toRootComment(int ref) {
         return Comment.builder()
                 .parent(null)
-                .member(new Member(memberId))
+                .memberId(memberId)
                 .content(content)
                 .postId(postId)
                 .depth(0)
@@ -44,12 +41,12 @@ public class CommentDto {
                 .build();
     }
 
-    public Comment toChildComment(Comment parent, int refOrder) {
+    public Comment toChildComment(int refOrder, Comment parent) {
         int depth = parent.getDepth() + 1;
         int ref = parent.getRef();
         return Comment.builder()
                 .parent(parent.getId())
-                .member(new Member(memberId))
+                .memberId(memberId)
                 .content(content)
                 .postId(postId)
                 .depth(depth)

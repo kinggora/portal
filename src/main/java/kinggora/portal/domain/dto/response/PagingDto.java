@@ -1,4 +1,4 @@
-package kinggora.portal.domain.dto;
+package kinggora.portal.domain.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

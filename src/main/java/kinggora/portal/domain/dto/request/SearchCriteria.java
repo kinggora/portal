@@ -1,4 +1,4 @@
-package kinggora.portal.domain.dto;
+package kinggora.portal.domain.dto.request;
 
 import kinggora.portal.annotation.DateType;
 import lombok.*;
@@ -17,4 +17,8 @@ public class SearchCriteria {
     private String startDate;
     @DateType(message = "날짜 형식이 올바르지 않습니다.")
     private String endDate;
+
+    public void injectBoardId(Integer boardId) {
+        this.boardId = boardId;
+    }
 }

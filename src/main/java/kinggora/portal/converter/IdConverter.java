@@ -1,4 +1,4 @@
-package kinggora.portal.api.converter;
+package kinggora.portal.converter;
 
 import kinggora.portal.domain.dto.request.Id;
 import org.springframework.core.convert.converter.Converter;
