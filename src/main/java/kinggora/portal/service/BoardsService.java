@@ -1,12 +1,14 @@
 package kinggora.portal.service;
 
 import kinggora.portal.api.ErrorCode;
-import kinggora.portal.domain.CommonPost;
 import kinggora.portal.domain.Post;
-import kinggora.portal.domain.QnaPost;
 import kinggora.portal.domain.dto.request.PagingCriteria;
+import kinggora.portal.domain.dto.request.PostDto;
 import kinggora.portal.domain.dto.request.SearchCriteria;
+import kinggora.portal.domain.dto.response.BoardDetail;
+import kinggora.portal.domain.dto.response.CommonBoardItem;
 import kinggora.portal.domain.dto.response.PageInfo;
+import kinggora.portal.domain.dto.response.QnaBoardItem;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.repository.BoardsRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,31 +27,39 @@ public class BoardsService {
     /**
      * 게시글 저장
      *
-     * @param post
-     * @return 게시글 id
+     * @param memberId 작성자 id
+     * @param dto      사용자 입력 데이터
+     * @return 저장 게시글 id
      */
-    public int savePost(Post post) {
-        return boardsRepository.savePost(post);
+    public int savePost(int boardId, int memberId, PostDto dto) {
+        return boardsRepository.savePost(dto.toRootPost(boardId, memberId));
     }
 
     /**
      * 자식 게시글 저장
      *
-     * @param post
-     * @return
+     * @param parentId 부모 게시글 id
+     * @param memberId 작성자 id
+     * @param dto      사용자 입력 데이터
+     * @return 저장 게시글 id
      */
-    public int saveChildPost(Post post) {
-        checkExistById(post.getParent());
-        return boardsRepository.savePost(post);
+    public int saveChildPost(int parentId, int memberId, PostDto dto) {
+        Post parent = findPostById(parentId);
+        return boardsRepository.savePost(dto.toChildPost(parent, memberId));
     }
 
     /**
      * 게시글 수정
      *
-     * @param post 수정할 데이터
+     * @param postId 수정할 게시글 id
+     * @param dto    수정할 데이터
      */
-    public void updatePost(Post post) {
-        boardsRepository.updatePost(post);
+    public void updatePost(int postId, PostDto dto) {
+        if (boardsRepository.existById(postId)) {
+            boardsRepository.updatePost(dto.toUpdatePost(postId));
+        } else {
+            throw new BizException(ErrorCode.POST_NOT_FOUND);
+        }
     }
 
     /**
@@ -58,7 +68,11 @@ public class BoardsService {
      * @param id 게시글 id
      */
     public void deletePostById(int id) {
-        boardsRepository.deletePostById(id);
+        if (boardsRepository.existById(id)) {
+            boardsRepository.deletePostById(id);
+        } else {
+            throw new BizException(ErrorCode.POST_NOT_FOUND);
+        }
     }
 
     /**
@@ -70,10 +84,26 @@ public class BoardsService {
     public Post findPostById(int id) {
         Post post = boardsRepository.findPostById(id)
                 .orElseThrow(() -> new BizException(ErrorCode.POST_NOT_FOUND));
-        if (post.isDeleted()) {
+        return post;
+    }
+
+    public BoardDetail findBoardDetail(int id) {
+        BoardDetail boardDetail = boardsRepository.findBoardDetail(id)
+                .orElseThrow(() -> new BizException(ErrorCode.POST_NOT_FOUND));
+        if (boardDetail.isDeleted()) {
             throw new BizException(ErrorCode.ALREADY_DELETED_POST);
         }
-        return post;
+        return boardDetail;
+    }
+
+    /**
+     * 답변 게시물(parent=parentId) 조회
+     *
+     * @param parentId 부모 게시글 id
+     * @return
+     */
+    public List<BoardDetail> findChildBoardDetails(int parentId) {
+        return boardsRepository.findChildBoardDetails(parentId);
     }
 
     /**
@@ -98,9 +128,9 @@ public class BoardsService {
      * @param searchCriteria 검색 조건
      * @return 게시글 리스트
      */
-    public List<CommonPost> findCommonPosts(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
+    public List<CommonBoardItem> findCommonBoardItems(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
         int startRow = (pagingCriteria.getPage() - 1) * pagingCriteria.getSize();
-        return boardsRepository.findCommonPosts(searchCriteria, startRow, pagingCriteria.getSize());
+        return boardsRepository.findCommonBoardItems(searchCriteria, startRow, pagingCriteria.getSize());
     }
 
     /**
@@ -111,19 +141,9 @@ public class BoardsService {
      * @param searchCriteria 검색 조건
      * @return 게시글 리스트
      */
-    public List<QnaPost> findQnaPosts(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
+    public List<QnaBoardItem> findQnaBoardItems(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
         int startRow = (pagingCriteria.getPage() - 1) * pagingCriteria.getSize();
-        return boardsRepository.findQnaPosts(searchCriteria, startRow, pagingCriteria.getSize());
-    }
-
-    /**
-     * 답변 게시물(parent=parentId) 조회
-     *
-     * @param parentId
-     * @return
-     */
-    public List<Post> findChildPosts(int parentId) {
-        return boardsRepository.findChildPosts(parentId);
+        return boardsRepository.findQnaBoardItems(searchCriteria, startRow, pagingCriteria.getSize());
     }
 
     public PageInfo getPageInfo(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
@@ -157,12 +177,6 @@ public class BoardsService {
             throw new BizException(ErrorCode.ANSWER_ALREADY_EXISTS);
         } else {
             boardsRepository.updatePost(post);
-        }
-    }
-
-    public void checkExistById(int id) {
-        if (boardsRepository.existById(id)) {
-            throw new BizException(ErrorCode.POST_NOT_FOUND);
         }
     }
 

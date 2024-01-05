@@ -1,9 +1,10 @@
 package kinggora.portal.mapper;
 
-import kinggora.portal.domain.CommonPost;
 import kinggora.portal.domain.Post;
-import kinggora.portal.domain.QnaPost;
 import kinggora.portal.domain.dto.request.SearchCriteria;
+import kinggora.portal.domain.dto.response.BoardDetail;
+import kinggora.portal.domain.dto.response.CommonBoardItem;
+import kinggora.portal.domain.dto.response.QnaBoardItem;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -28,6 +29,14 @@ public interface BoardsMapper {
      * @return 게시글 정보
      */
     Optional<Post> findPostById(int id);
+
+    /**
+     * 게시글 상세 조회
+     *
+     * @param id 게시글 id
+     * @return
+     */
+    Optional<BoardDetail> findBoardDetail(int id);
 
     /**
      * 파일 id로 게시글 단건 조회
@@ -68,7 +77,7 @@ public interface BoardsMapper {
      * @param offset   페이징
      * @return 게시글 리스트
      */
-    List<CommonPost> findCommonPosts(@Param("criteria") SearchCriteria criteria, @Param("offset") int offset, @Param("limit") int limit);
+    List<CommonBoardItem> findCommonBoardItems(@Param("criteria") SearchCriteria criteria, @Param("offset") int offset, @Param("limit") int limit);
 
     /**
      * 검색 조건에 해당하는 질문 게시글 조회 + 페이징 처리
@@ -79,9 +88,15 @@ public interface BoardsMapper {
      * @param offset   페이징
      * @return 게시글 리스트
      */
-    List<QnaPost> findQnaPosts(@Param("criteria") SearchCriteria criteria, @Param("offset") int offset, @Param("limit") int limit);
+    List<QnaBoardItem> findQnaBoardItems(@Param("criteria") SearchCriteria criteria, @Param("offset") int offset, @Param("limit") int limit);
 
-    List<Post> findChildPosts(int id);
+    /**
+     * 자식 게시글 조회
+     *
+     * @param parentId 부모 게시글 id
+     * @return
+     */
+    List<BoardDetail> findChildBoardDetails(int parentId);
 
     /**
      * 검색 조건에 해당하는 게시글 개수 조회

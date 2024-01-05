@@ -1,4 +1,4 @@
-package kinggora.portal.domain;
+package kinggora.portal.domain.dto.response;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,6 +10,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class QnaPost extends Post {
-    private boolean existsChild; // 답변 유무
+public class CommonBoardItem extends BoardItem {
+    private int commentCount;
+    private boolean attached;
+    private boolean imaged;
+    private String thumbUrl;
 }

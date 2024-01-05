@@ -1,10 +1,11 @@
 package kinggora.portal.repository;
 
 import kinggora.portal.api.ErrorCode;
-import kinggora.portal.domain.CommonPost;
 import kinggora.portal.domain.Post;
-import kinggora.portal.domain.QnaPost;
 import kinggora.portal.domain.dto.request.SearchCriteria;
+import kinggora.portal.domain.dto.response.BoardDetail;
+import kinggora.portal.domain.dto.response.CommonBoardItem;
+import kinggora.portal.domain.dto.response.QnaBoardItem;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.mapper.BoardsMapper;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,16 @@ public class BoardsRepository {
     }
 
     /**
+     * 게시글 상세 조회
+     *
+     * @param id 게시글 id
+     * @return 게시글 상세 정보
+     */
+    public Optional<BoardDetail> findBoardDetail(int id) {
+        return mapper.findBoardDetail(id);
+    }
+
+    /**
      * 파일 id로 게시글 단건 조회
      *
      * @param fileId 파일 id
@@ -63,8 +74,8 @@ public class BoardsRepository {
      * @param pageSize 페이징 (limit)
      * @return 게시글 리스트
      */
-    public List<CommonPost> findCommonPosts(SearchCriteria criteria, int startRow, int pageSize) {
-        return mapper.findCommonPosts(criteria, startRow, pageSize);
+    public List<CommonBoardItem> findCommonBoardItems(SearchCriteria criteria, int startRow, int pageSize) {
+        return mapper.findCommonBoardItems(criteria, startRow, pageSize);
     }
 
     /**
@@ -75,19 +86,18 @@ public class BoardsRepository {
      * @param pageSize 페이징 (limit)
      * @return 게시글 리스트
      */
-    public List<QnaPost> findQnaPosts(SearchCriteria criteria, int startRow, int pageSize) {
-        return mapper.findQnaPosts(criteria, startRow, pageSize);
+    public List<QnaBoardItem> findQnaBoardItems(SearchCriteria criteria, int startRow, int pageSize) {
+        return mapper.findQnaBoardItems(criteria, startRow, pageSize);
     }
 
     /**
      * 자식 게시물 조회
-     * parent=parentId
      *
-     * @param parentId
+     * @param parentId 부모 게시글 id
      * @return
      */
-    public List<Post> findChildPosts(int parentId) {
-        return mapper.findChildPosts(parentId);
+    public List<BoardDetail> findChildBoardDetails(int parentId) {
+        return mapper.findChildBoardDetails(parentId);
     }
 
     /**
@@ -136,11 +146,25 @@ public class BoardsRepository {
         }
     }
 
+    /**
+     * 게시글 존재 여부
+     * 삭제 처리(deleted=true) 되지 않은 게시글을 id로 탐색
+     *
+     * @param id 게시글 id
+     * @return true: 존재, false: 존재X
+     */
+    public boolean existById(int id) {
+        return mapper.existById(id);
+    }
+
+    /**
+     * 자식 게시물 존재 여부
+     *
+     * @param id
+     * @return true: 존재, false: 존재 X
+     */
     public boolean childExists(int id) {
         return mapper.childExists(id);
     }
 
-    public boolean existById(int id) {
-        return mapper.existById(id);
-    }
 }
