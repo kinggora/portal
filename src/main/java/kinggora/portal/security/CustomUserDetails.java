@@ -19,11 +19,12 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> auth = new ArrayList<>();
-        for (MemberRole role : member.getRole()) {
-            auth.add(new SimpleGrantedAuthority(role.getValue()));
+        for (MemberRole role : member.getRoles()) {
+            auth.add(new SimpleGrantedAuthority(role.getCode()));
         }
         return auth;
     }
+
 
     @Override
     public String getPassword() {
@@ -52,6 +53,14 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return !member.isDeleted();
+    }
+
+    public Member getMember() {
+        return member;
+    }
+
+    public Integer getId() {
+        return getMember().getId();
     }
 }

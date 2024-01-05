@@ -15,14 +15,15 @@ import java.time.LocalDateTime;
 public class Post {
 
     private Integer id;
-    private BoardInfo boardInfo;
-    private Member member;
-    private Category category;
+    private Integer boardId;
+    private Integer memberId;
+    private Integer categoryId;
     private String title;
     private String content;
     private int hit;
     private Integer parent;
     private LocalDateTime regDate;
     private LocalDateTime modDate;
+    private Boolean secret;
     private boolean deleted;
 }

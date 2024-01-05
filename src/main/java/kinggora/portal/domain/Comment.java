@@ -13,7 +13,7 @@ public class Comment {
 
     private Integer id;
     private Integer postId;
-    private Member member;
+    private Integer memberId;
     private String content;
     private LocalDateTime regDate;
     private LocalDateTime modDate;
@@ -22,4 +22,5 @@ public class Comment {
     private Integer parent;
     private Integer depth;
     private boolean deleted;
+
 }
