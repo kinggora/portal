@@ -1,23 +1,22 @@
 package kinggora.portal.security;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import kinggora.portal.domain.dto.TokenInfo;
+import kinggora.portal.domain.dto.response.TokenInfo;
+import kinggora.portal.service.CustomUserDetailService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
 
@@ -29,23 +28,28 @@ public class JwtTokenProvider {
     private final Key key;
     private final long ACCESS_TOKEN_EXPIRE_TIME; //30분
     private final long REFRESH_TOKEN_EXPIRE_TIME; //14일
+    private final CustomUserDetailService customUserDetailService;
 
     /**
      * 토큰 암호화 키, 유효 시간 초기화
+     *
      * @param secretKey
      */
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey,
                             @Value("${jwt.access-token-expire-time}") long accessTime,
-                            @Value("${jwt.refresh-token-expire-time}") long refreshTime) {
+                            @Value("${jwt.refresh-token-expire-time}") long refreshTime,
+                            @Autowired CustomUserDetailService customUserDetailService) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.ACCESS_TOKEN_EXPIRE_TIME = accessTime;
         this.REFRESH_TOKEN_EXPIRE_TIME = refreshTime;
+        this.customUserDetailService = customUserDetailService;
     }
 
     /**
      * Authentication 에서 권한을 가져와서 Access Token, Refresh Token 생성
      * Access Token
+     *
      * @param authentication
      * @return 토큰
      */
@@ -80,58 +84,24 @@ public class JwtTokenProvider {
 
     /**
      * JWT 토큰을 복호화하여 인증 정보 추출
+     * 인증 정보를 통해 UserDetail 조회하여 Authentication 생성
+     *
      * @param accessToken
      * @return
      */
     public Authentication getAuthentication(String accessToken) {
         Claims claims = parseClaims(accessToken);
-        if (claims.get(AUTHORITIES_KEY) == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
-        }
-
-        // 클레임에서 권한 정보 가져오기
-        // TODO 권한
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-
-        // UserDetails 객체를 만들어서 Authentication 리턴
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
-        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
-    }
-
-    /**
-     * 토큰 유효성 검증
-     * @param token
-     * @return true: 유효한 토큰 / false: 유효하지 않은 토큰
-     */
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            log.info("Invalid JWT Token", e);
-        } catch (ExpiredJwtException e) {
-            log.info("Expired JWT Token", e);
-        } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT Token", e);
-        } catch (IllegalArgumentException e) {
-            log.info("JWT claims string is empty.", e);
-        }
-        return false;
+        UserDetails userDetails = customUserDetailService.loadUserByUsername(claims.getSubject());
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
     /**
      * 토큰 복호화
+     *
      * @param accessToken
      * @return 복호화된 정보
      */
     private Claims parseClaims(String accessToken) {
-        try {
-            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
-        } catch (ExpiredJwtException e) {
-            return e.getClaims();
-        }
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
     }
 }
