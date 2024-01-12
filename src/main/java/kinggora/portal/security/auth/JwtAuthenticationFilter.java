@@ -1,9 +1,13 @@
-package kinggora.portal.security;
+package kinggora.portal.security.auth;
 
+import kinggora.portal.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -18,6 +22,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserDetailsService userDetailsService;
 
     /**
      * Request Header 에서 JWT 토큰을 추출하고 토큰 유효성을 검사한다.
@@ -32,8 +37,9 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
         String token = resolveToken((HttpServletRequest) request);
-        if (token != null) {
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
+        if (token != null && jwtTokenProvider.validateToken(token)) {
+            String username = jwtTokenProvider.extractUsername(token);
+            Authentication authentication = getAuthentication(username);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         chain.doFilter(request, response);
@@ -51,5 +57,10 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    private Authentication getAuthentication(String username) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 }

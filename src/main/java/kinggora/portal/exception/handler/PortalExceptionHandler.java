@@ -10,9 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -42,33 +39,6 @@ public class PortalExceptionHandler extends ResponseEntityExceptionHandler {
             return ResponseEntity.status(error.getStatus())
                     .body(ErrorResponse.of(error, message));
         }
-    }
-
-    /**
-     * 로그인 중 발생하는 예외 처리 (인증)
-     * Http Status: 401 (Unauthorized)
-     *
-     * @param ex AuthenticationException
-     * @return ResponseEntity<ErrorResponse>
-     */
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
-        log.error("PortalExceptionHandler.handleAuthenticationException", ex);
-        ErrorCode errorCode;
-        if (ex instanceof BadCredentialsException || ex instanceof UsernameNotFoundException) {
-            errorCode = ErrorCode.INVALID_CREDENTIAL;
-        } else if (ex instanceof AccountExpiredException || ex instanceof CredentialsExpiredException) {
-            errorCode = ErrorCode.EXPIRED_USER;
-        } else if (ex instanceof DisabledException) {
-            errorCode = ErrorCode.DISABLED_USER;
-        } else if (ex instanceof LockedException) {
-            errorCode = ErrorCode.LOCKED_USER;
-        } else {
-            errorCode = ErrorCode.AUTHENTICATION_ERROR;
-        }
-        return ResponseEntity
-                .status(errorCode.getStatus().value())
-                .body(ErrorResponse.of(errorCode));
     }
 
     /**

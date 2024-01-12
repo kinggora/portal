@@ -1,4 +1,4 @@
-package kinggora.portal.security;
+package kinggora.portal.security.user;
 
 import kinggora.portal.domain.Member;
 import kinggora.portal.domain.type.MemberRole;

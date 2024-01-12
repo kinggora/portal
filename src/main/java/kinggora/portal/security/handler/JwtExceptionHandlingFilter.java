@@ -1,4 +1,4 @@
-package kinggora.portal.exception.handler;
+package kinggora.portal.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;

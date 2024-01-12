@@ -1,22 +1,30 @@
 package kinggora.portal.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kinggora.portal.exception.handler.CustomAccessDeniedHandler;
-import kinggora.portal.exception.handler.JwtExceptionHandlingFilter;
-import kinggora.portal.security.JwtAuthenticationFilter;
-import kinggora.portal.security.JwtTokenProvider;
+import kinggora.portal.security.auth.CustomUsernamePasswordAuthenticationFilter;
+import kinggora.portal.security.auth.JwtAuthenticationFilter;
+import kinggora.portal.security.handler.*;
+import kinggora.portal.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -29,9 +37,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final UserDetailsService userDetailsService;
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
-    private final AuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -43,21 +51,71 @@ public class SecurityConfig {
                 .cors().configurationSource(corsConfigurationSource())
                 .and()
                 .authorizeHttpRequests()
-                .antMatchers("/download/**").hasAuthority("ROLE_ADMIN")
+                .antMatchers("/download/**").hasAuthority("ROLE_USER")
+                .mvcMatchers(HttpMethod.POST, "/members").permitAll()
+                .mvcMatchers("/members").hasAuthority("ROLE_USER")
                 .antMatchers("/**").permitAll()
                 .and()
                 .exceptionHandling()
-                .accessDeniedHandler(new CustomAccessDeniedHandler(objectMapper))
-                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler())
+                .authenticationEntryPoint(authenticationEntryPoint())
                 .and()
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new JwtExceptionHandlingFilter(objectMapper), JwtAuthenticationFilter.class);
+                .addFilterBefore(customUsernamePasswordAuthenticationFilter(), LogoutFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter(), CustomUsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtExceptionHandlingFilter(), JwtAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(userDetailsService);
+        return new ProviderManager(provider);
+    }
+
+    @Bean
+    public CustomUsernamePasswordAuthenticationFilter customUsernamePasswordAuthenticationFilter() {
+        CustomUsernamePasswordAuthenticationFilter customUsernamePasswordAuthenticationFilter = new CustomUsernamePasswordAuthenticationFilter(authenticationManager());
+        customUsernamePasswordAuthenticationFilter.setAuthenticationManager(authenticationManager());
+        customUsernamePasswordAuthenticationFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler());
+        customUsernamePasswordAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler());
+        return customUsernamePasswordAuthenticationFilter;
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler authenticationSuccessHandler() {
+        return new SignInSuccessJwtProvideHandler(jwtTokenProvider, objectMapper);
+    }
+
+    @Bean
+    public JwtExceptionHandlingFilter jwtExceptionHandlingFilter() {
+        return new JwtExceptionHandlingFilter(objectMapper);
+    }
+
+    @Bean
+    public AuthenticationFailureHandler authenticationFailureHandler() {
+        return new SignInFailureHandler(objectMapper);
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService);
+    }
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return new CustomAuthenticationEntryPoint(objectMapper);
+    }
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return new CustomAccessDeniedHandler(objectMapper);
     }
 
     /**
