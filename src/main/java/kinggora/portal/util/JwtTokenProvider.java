@@ -9,6 +9,7 @@ import io.jsonwebtoken.security.Keys;
 import kinggora.portal.domain.dto.response.TokenInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -16,6 +17,7 @@ import java.util.Date;
 
 @Slf4j
 @Component
+@PropertySource("classpath:/application-jwt.properties")
 public class JwtTokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "Bearer";
