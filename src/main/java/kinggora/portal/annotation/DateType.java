@@ -16,7 +16,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 @Constraint(validatedBy = DateTypeValidator.class)
 public @interface DateType {
-    String message() default "";
+    String message() default "날짜 형식이 올바르지 않습니다.";
 
     Class<?>[] groups() default {};
 
