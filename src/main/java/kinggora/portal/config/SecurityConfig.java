@@ -1,10 +1,10 @@
 package kinggora.portal.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kinggora.portal.security.auth.CustomUsernamePasswordAuthenticationFilter;
-import kinggora.portal.security.auth.JwtAuthenticationFilter;
+import kinggora.portal.security.filter.CustomUsernamePasswordAuthenticationFilter;
+import kinggora.portal.security.filter.JwtAuthenticationFilter;
 import kinggora.portal.security.handler.*;
-import kinggora.portal.util.JwtTokenProvider;
+import kinggora.portal.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +31,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Spring Security 설정
+ */
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -38,23 +41,32 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Spring Security Filter Chain 빈 등록
+     * 인증 방식, 세션 정책, HTTP 요청 인가 설정, 스프링 시큐리티 예외 핸들러, 필터 적용 순서 등을 정의
+     *
+     * @param http HTTP 요청 보안 설정
+     * @return SecurityFilterChain
+     * @throws Exception
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .httpBasic().disable()
+                .formLogin().disable()
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .cors().configurationSource(corsConfigurationSource())
                 .and()
                 .authorizeHttpRequests()
-                .antMatchers("/download/**").hasAuthority("ROLE_USER")
+                .mvcMatchers(HttpMethod.GET, "/download/**").hasAuthority("ROLE_USER")
                 .mvcMatchers(HttpMethod.POST, "/members").permitAll()
                 .mvcMatchers("/members").hasAuthority("ROLE_USER")
-                .antMatchers("/**").permitAll()
+                .mvcMatchers("/**").permitAll()
                 .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler())
@@ -66,11 +78,62 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Authentication Processing Filter 빈 등록
+     * 인증을 수행할 AuthenticationManager, 인증 성공/실패 핸들러 설정
+     * HTTP 로그인 요청에서 인증 정보를 추출하여 AuthenticationManager 호출
+     *
+     * @return CustomUsernamePasswordAuthenticationFilter
+     */
+    @Bean
+    public CustomUsernamePasswordAuthenticationFilter customUsernamePasswordAuthenticationFilter() {
+        CustomUsernamePasswordAuthenticationFilter authenticationFilter = new CustomUsernamePasswordAuthenticationFilter(authenticationManager());
+        authenticationFilter.setAuthenticationManager(authenticationManager());
+        authenticationFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler());
+        authenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler());
+        return authenticationFilter;
+    }
+
+    /**
+     * 인증 성공 핸들러 빈 등록
+     *
+     * @return SignInSuccessJwtProvideHandler
+     */
+    @Bean
+    public AuthenticationSuccessHandler authenticationSuccessHandler() {
+        return new SignInSuccessJwtProvideHandler(jwtProvider, objectMapper);
+    }
+
+    /**
+     * 인증 실패 핸들러 빈 등록
+     *
+     * @return SignInFailureHandler
+     */
+    @Bean
+    public AuthenticationFailureHandler authenticationFailureHandler() {
+        return new SignInFailureHandler(objectMapper);
+    }
+
+    /**
+     * password 단방향 암호화기 빈 등록
+     * Spring Security 가 제공하는 PasswordEncoder 사용 (위임)
+     * (기본 설정: BCryptPasswordEncoder)
+     *
+     * @return BCryptPasswordEncoder
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
+    /**
+     * UsernamePasswordAuthenticationFilter 의 호출로 실제 인증을 수행할 AuthenticationManager 빈 등록
+     * CustomUsernamePasswordAuthenticationFilter 로부터 UsernamePasswordAuthenticationToken 을 받아 인증 수행
+     * 1. UserDetailsService.loadUserByUsername(username): UserDetail 조회
+     * 2. PasswordEncoder.match(password, UserDetail.password): password 인증
+     *
+     * @return DaoAuthenticationProvider
+     */
     @Bean
     public AuthenticationManager authenticationManager() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -79,43 +142,47 @@ public class SecurityConfig {
         return new ProviderManager(provider);
     }
 
-    @Bean
-    public CustomUsernamePasswordAuthenticationFilter customUsernamePasswordAuthenticationFilter() {
-        CustomUsernamePasswordAuthenticationFilter customUsernamePasswordAuthenticationFilter = new CustomUsernamePasswordAuthenticationFilter(authenticationManager());
-        customUsernamePasswordAuthenticationFilter.setAuthenticationManager(authenticationManager());
-        customUsernamePasswordAuthenticationFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler());
-        customUsernamePasswordAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler());
-        return customUsernamePasswordAuthenticationFilter;
-    }
-
-    @Bean
-    public AuthenticationSuccessHandler authenticationSuccessHandler() {
-        return new SignInSuccessJwtProvideHandler(jwtTokenProvider, objectMapper);
-    }
-
-    @Bean
-    public JwtExceptionHandlingFilter jwtExceptionHandlingFilter() {
-        return new JwtExceptionHandlingFilter(objectMapper);
-    }
-
-    @Bean
-    public AuthenticationFailureHandler authenticationFailureHandler() {
-        return new SignInFailureHandler(objectMapper);
-    }
-
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService);
-    }
-
+    /**
+     * 스프링 시큐리티 예외: AuthenticationException 처리 핸들러 빈 등록
+     * 리소스(URL) 요청 중 발생한 인증 관련 예외 처리
+     *
+     * @return CustomAuthenticationEntryPoint
+     */
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
         return new CustomAuthenticationEntryPoint(objectMapper);
     }
 
+    /**
+     * 스프링 시큐리티 예외: AccessDeniedException 처리 핸들러 빈 등록
+     * 리소스(URL) 요청 중 발생한 인가 관련 예외 처리
+     *
+     * @return CustomAccessDeniedHandler
+     */
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
         return new CustomAccessDeniedHandler(objectMapper);
+    }
+
+    /**
+     * JWT 기반 인증 필터 빈 등록
+     * HTTP 요청에 Authorization 헤더가 있는 경우 인증 수행
+     *
+     * @return JwtAuthenticationFilter
+     */
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtProvider, userDetailsService);
+    }
+
+    /**
+     * JwtAuthenticationFilter에서 발생한 JwtException 핸들러 필터 빈 등록
+     *
+     * @return JwtExceptionHandlingFilter
+     */
+    @Bean
+    public JwtAuthExceptionHandlingFilter jwtExceptionHandlingFilter() {
+        return new JwtAuthExceptionHandlingFilter(objectMapper);
     }
 
     /**

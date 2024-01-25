@@ -4,8 +4,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * comment 테이블 Domain Class
+ */
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

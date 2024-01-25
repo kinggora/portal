@@ -8,23 +8,32 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 게시판 정보 리포지토리
+ * board_info 테이블에 대한 CRUD 수행
+ */
 @Repository
 @RequiredArgsConstructor
 public class BoardInfoRepository {
 
     private final BoardInfoMapper mapper;
 
-    public Optional<BoardInfo> findBoardInfoById(int id) {
-        return mapper.findBoardInfoById(id);
+    /**
+     * 게시판 정보 조회
+     *
+     * @param id 조회할 게시판 id
+     * @return 게시판 정보
+     */
+    public Optional<BoardInfo> findById(int id) {
+        return mapper.findById(id);
     }
 
-    public List<BoardInfo> findBoardInfos() {
-        return mapper.findBoardInfos();
+    /**
+     * 모든 게시판 조회
+     *
+     * @return 모든 게시판 정보
+     */
+    public List<BoardInfo> findAll() {
+        return mapper.findAll();
     }
-
-    public Integer saveBoardInfo(BoardInfo boardInfo) {
-        mapper.saveBoardInfo(boardInfo);
-        return boardInfo.getId();
-    }
-
 }

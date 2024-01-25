@@ -1,10 +1,10 @@
 package kinggora.portal.repository;
 
-import kinggora.portal.api.ErrorCode;
+import kinggora.portal.controller.api.error.ErrorCode;
 import kinggora.portal.domain.Comment;
-import kinggora.portal.domain.dto.response.CommentResponse;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.mapper.CommentMapper;
+import kinggora.portal.model.response.CommentResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -12,6 +12,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 댓글 리포지토리
+ * comment 테이블에 대한 CRUD 수행
+ */
 @Slf4j
 @Repository
 @RequiredArgsConstructor
@@ -25,17 +29,74 @@ public class CommentRepository {
      * @param comment 댓글 정보
      * @return 댓글 id
      */
-    public int saveComment(Comment comment) {
-        if (mapper.saveComment(comment) == 0) {
-            log.error("fail CommentRepository.saveComment");
+    public int save(Comment comment) {
+        if (mapper.save(comment) == 0) {
+            log.error("fail CommentRepository.save");
             throw new BizException(ErrorCode.DB_ERROR, "댓글 등록 실패");
         }
         return comment.getId();
     }
 
     /**
+     * 댓글 단건 조회
+     *
+     * @param id 댓글 id
+     * @return 댓글 정보
+     */
+    public Optional<Comment> findById(Integer id) {
+        return mapper.findById(id);
+    }
+
+    /**
+     * 게시글에 대한 댓글 조회
+     *
+     * @param postId 게시글 id
+     * @return 댓글 리스트
+     */
+    public List<CommentResponse> findByPostId(int postId) {
+        return mapper.findByPostId(postId);
+    }
+
+    /**
+     * 댓글 수정
+     *
+     * @param comment 수정할 데이터
+     */
+    public void update(Comment comment) {
+        if (mapper.update(comment) == 0) {
+            log.error("fail CommentRepository.update");
+            throw new BizException(ErrorCode.DB_ERROR, "댓글 수정 실패");
+        }
+    }
+
+    /**
+     * 댓글 숨기기
+     * update deleted=true
+     *
+     * @param id 댓글 id
+     */
+    public void hideById(int id) {
+        if (mapper.hideById(id) == 0) {
+            log.error("fail CommentRepository.hideById");
+            throw new BizException(ErrorCode.DB_ERROR, "댓글 삭제 실패");
+        }
+    }
+
+    /**
+     * 댓글 삭제
+     *
+     * @param id 댓글 id
+     */
+    public void deleteById(int id) {
+        if (mapper.deleteById(id) == 0) {
+            log.error("fail CommentRepository.deleteById");
+            throw new BizException(ErrorCode.DB_ERROR, "댓글 삭제 실패");
+        }
+    }
+
+    /**
      * 자식 댓글의 refOrder 찾기
-     * refOrder상 부모 댓글 이후로 부모와 같거나 작은 depth 값을 가진 댓글이 첫 번째로 나타나는 위치
+     * 부모 댓글보다 refOrder가 큰 댓글 중 부모와 같거나 작은 depth를 가진 댓글이 첫 번째로 나타나는 위치
      *
      * @param parent 부모 댓글
      * @return 자식 댓글의 refOrder
@@ -49,10 +110,9 @@ public class CommentRepository {
      *
      * @return Max(ref)
      */
-    public int findMaxRef() {
-        return mapper.findMaxRef();
+    public int getMaxRef() {
+        return mapper.getMaxRef();
     }
-
 
     /**
      * 그룹 내 refOrder 컬럼의 최댓값 반환
@@ -60,8 +120,8 @@ public class CommentRepository {
      * @param ref 댓글 그룹
      * @return refOrder 최댓값
      */
-    public int findMaxRefOrder(int ref) {
-        return mapper.findMaxRefOrder(ref);
+    public int getMaxRefOrder(int ref) {
+        return mapper.getMaxRefOrder(ref);
     }
 
     /**
@@ -76,86 +136,37 @@ public class CommentRepository {
     }
 
     /**
-     * refOrder 이상의 컬럼 대상 업데이트
+     * 댓글 그룹 내 refOrder 이상의 컬럼 업데이트
      * refOrder = refOrder + 1
      *
      * @param ref      댓글 그룹
      * @param refOrder 업데이트 기준 값
      */
-    public void updateRefOrder(Integer ref, Integer refOrder) {
-        if (mapper.updateRefOrder(ref, refOrder) == 0) {
-            log.error("fail CommentRepository.updateComment");
+    public void refOrderUp(int ref, int refOrder) {
+        if (mapper.refOrderUp(ref, refOrder) == 0) {
+            log.error("fail CommentRepository.updateRefOrder");
         }
     }
 
     /**
-     * 댓글 단건 조회
-     *
-     * @param id 댓글 id
-     * @return 댓글 정보
-     */
-    public Optional<Comment> findCommentById(Integer id) {
-        return mapper.findCommentById(id);
-    }
-
-    /**
-     * 게시글에 대한 댓글 조회
-     *
-     * @param postId 게시글 id
-     * @return 댓글 리스트
-     */
-    public List<CommentResponse> findComments(int postId) {
-        return mapper.findComments(postId);
-    }
-
-    /**
-     * 댓글 수정
-     *
-     * @param comment 수정할 데이터
-     */
-    public void updateComment(Comment comment) {
-        if (mapper.updateComment(comment) == 0) {
-            log.error("fail CommentRepository.updateComment");
-            throw new BizException(ErrorCode.DB_ERROR, "댓글 수정 실패");
-        }
-    }
-
-    /**
-     * 댓글 숨기기 (del_flag=true)
-     *
-     * @param id 댓글 id
-     */
-    public void hideComment(Integer id) {
-        if (mapper.hideComment(id) == 0) {
-            log.error("fail CommentRepository.hideComment");
-            throw new BizException(ErrorCode.DB_ERROR, "댓글 삭제 실패");
-        }
-    }
-
-    /**
-     * 댓글 삭제 (delete)
-     *
-     * @param id 댓글 id
-     */
-    public void deleteComment(Integer id) {
-        if (mapper.deleteComment(id) == 0) {
-            log.error("fail CommentRepository.deleteComment");
-            throw new BizException(ErrorCode.DB_ERROR, "댓글 삭제 실패");
-        }
-    }
-
-    /**
-     * 댓글에 대한 자식(대댓글) 존재 여부
+     * 자식(대댓글) 존재 여부
      *
      * @param id 댓글 id
      * @return true: 대댓글 존재o, false: 대댓글 존재x
      */
-    public boolean childExists(Integer id) {
-        return mapper.childExists(id);
+    public boolean hasChild(int id) {
+        return mapper.hasChild(id);
     }
 
-    public int findChildCount(int parentId) {
-        return mapper.findChildCount(parentId);
+
+    /**
+     * 자식(대댓글) 개수 조회
+     *
+     * @param id 댓글 id
+     * @return 자식(대댓글) 개수
+     */
+    public int getChildCount(int id) {
+        return mapper.getChildCount(id);
     }
 
 }

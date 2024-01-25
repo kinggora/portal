@@ -9,11 +9,12 @@
         post_id
         , orig_name
         , store_name
-        , store_dir
+        , url
         , ext
         , size
         , type
-        , del_flag
+        , deleted
+        , reg_date
         )
         VALUES
         <foreach collection="list" item="item" separator=",">
@@ -21,61 +22,56 @@
             #{item.postId}
             , #{item.origName}
             , #{item.storeName}
-            , #{item.storeDir}
+            , #{item.url}
             , #{item.ext}
             , #{item.size}
             , #{item.type}
             , false
+            , #{item.regDate}
             )
         </foreach>
     </insert>
 
-    <select id="findFilesOfType" parameterType="Map" resultType="UploadFile">
-        SELECT * FROM file WHERE del_flag=false AND type=#{type}
-        <if test="postIds.size != 0">
-            AND post_id IN
-            <foreach collection="postIds" item="id" open="(" separator="," close=")">
-                #{id}
-            </foreach>
-        </if>
-    </select>
-
-    <select id="findFileById" parameterType="int" resultType="UploadFile">
+    <select id="findById" parameterType="int" resultType="UploadFile">
         SELECT
         id
         , post_id
         , orig_name
         , store_name
-        , store_dir
+        , url
         , ext
         , size
         , type
-        , del_flag AS deleted
+        , deleted
+        , reg_date
         FROM file WHERE id=#{id}
     </select>
 
-    <select id="findFiles" parameterType="int" resultType="UploadFile">
+    <select id="findByPostId" parameterType="int" resultType="UploadFile">
         SELECT
         id
         , post_id
         , orig_name
         , store_name
-        , store_dir
+        , url
         , ext
         , size
         , type
-        FROM file WHERE post_id=#{postId} AND del_flag=false
+        , deleted
+        , reg_date
+        FROM file
+        WHERE post_id=#{postId} AND deleted=false
     </select>
 
-    <update id="deleteFile" parameterType="int">
+    <update id="deleteById" parameterType="int">
         UPDATE file
-        SET del_flag=true
-        WHERE id=#{id} AND del_flag=false
+        SET deleted=true
+        WHERE id=#{id} AND deleted=false
     </update>
 
-    <update id="deleteFiles" parameterType="int">
+    <update id="deleteByPostId" parameterType="int">
         UPDATE file
-        SET del_flag=true
-        WHERE post_id=#{postId} AND del_flag=false
+        SET deleted=true
+        WHERE post_id=#{postId} AND deleted=false
     </update>
 </mapper>

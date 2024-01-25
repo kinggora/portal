@@ -16,7 +16,7 @@ class BoardInfoRepositoryTest {
 
     @Test
     void findById() {
-        BoardInfo boardInfo = repository.findBoardInfoById(1).get();
+        BoardInfo boardInfo = repository.findById(1).get();
         Assertions.assertThat(boardInfo.getName()).isEqualTo("notice");
         Assertions.assertThat(boardInfo.getSubject()).isEqualTo("공지");
         Assertions.assertThat(boardInfo.getAccessList()).isEqualTo(AccessLevel.ALL);

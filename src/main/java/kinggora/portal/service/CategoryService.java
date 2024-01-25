@@ -3,12 +3,13 @@ package kinggora.portal.service;
 import kinggora.portal.domain.Category;
 import kinggora.portal.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Slf4j
+/**
+ * 카테고리 서비스
+ */
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
@@ -17,10 +18,22 @@ public class CategoryService {
 
     /**
      * 게시판 별 카테고리 조회
+     *
      * @param id 게시판 id
      * @return 카테고리 정보
      */
     public List<Category> findCategories(Integer id) {
-        return categoryRepository.findCategories(id);
+        return categoryRepository.findByBoardId(id);
+    }
+
+    /**
+     * 특정 게시판에 id가 categoryId인 카테고리가 존재하는지 확인
+     *
+     * @param categoryId 카테고리 id
+     * @param boardId    게시판 id
+     * @return 존재 여부
+     */
+    public boolean isCategoryOf(int categoryId, int boardId) {
+        return categoryRepository.isCategoryOf(categoryId, boardId);
     }
 }

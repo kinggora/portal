@@ -8,6 +8,9 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
+/**
+ * boards 테이블 Domain Object
+ */
 @Getter
 @SuperBuilder
 @AllArgsConstructor

@@ -5,6 +5,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * file 테이블 Domain Class
+ */
 @Getter
 @Builder
 @AllArgsConstructor

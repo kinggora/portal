@@ -4,10 +4,11 @@ import kinggora.portal.domain.type.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
+/**
+ * board_info 테이블 Domain Class
+ */
 @Getter
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class BoardInfo {
@@ -25,7 +26,4 @@ public class BoardInfo {
     private String boardType;
     private boolean allowSecret;
 
-    public BoardInfo(int id) {
-        this.id = id;
-    }
 }

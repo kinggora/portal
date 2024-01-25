@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kinggora.portal.mapper.BoardMapper">
+    <resultMap id="BoardDetail" type="BoardDetail">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="hit" column="hit"/>
+        <result property="regDate" column="reg_date"/>
+        <result property="modDate" column="mod_date"/>
+        <result property="parent" column="parent"/>
+        <result property="secret" column="secret"/>
+        <result property="deleted" column="deleted"/>
+        <result property="commentExists" column="comment_exists"/>
+        <result property="fileExists" column="file_exists"/>
+        <result property="childExists" column="child_exists"/>
+        <association property="boardInfo" javaType="BoardInfo" columnPrefix="bi_">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="subject" column="subject"/>
+            <result property="accessList" column="access_list"/>
+            <result property="accessWrite" column="access_write"/>
+            <result property="accessRead" column="access_read"/>
+            <result property="accessReplyRead" column="access_reply_read"/>
+            <result property="accessReplyWrite" column="access_reply_write"/>
+            <result property="accessComment" column="access_comment"/>
+            <result property="accessFile" column="access_file"/>
+            <result property="boardType" column="board_type"/>
+            <result property="allowSecret" column="allow_secret"/>
+        </association>
+        <association property="member" javaType="MemberResponse" columnPrefix="m_">
+            <result property="username" column="username"/>
+            <result property="name" column="name"/>
+            <result property="roles" column="roles" typeHandler="MemberRolesTypeHandler"/>
+        </association>
+        <association property="category" javaType="Category" columnPrefix="c_">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+    <resultMap id="BoardItem" type="BoardItem">
+        <result property="postId" column="id"/>
+        <result property="boardId" column="board_id"/>
+        <result property="title" column="title"/>
+        <result property="hit" column="hit"/>
+        <result property="regDate" column="reg_date"/>
+        <result property="memberName" column="member_name"/>
+        <result property="categoryName" column="category_name"/>
+    </resultMap>
+    <resultMap id="CommonBoardItem" type="CommonBoardItem" extends="BoardItem">
+        <result property="commentCount" column="comment_count"/>
+        <result property="attached" column="attached"/>
+        <result property="imaged" column="imaged"/>
+        <result property="thumbUrl" column="thumb_url"/>
+    </resultMap>
+    <resultMap id="QnaBoardItem" type="QnaBoardItem" extends="BoardItem">
+        <result property="modDate" column="mod_date"/>
+        <result property="secret" column="secret"/>
+        <result property="childExists" column="child_exists"/>
+    </resultMap>
+
+    <insert id="save" parameterType="Post" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO boards(
+        member_id
+        , board_id
+        , category_id
+        , title
+        , content
+        , parent
+        , reg_date
+        , hit
+        , secret
+        , deleted
+        )
+        VALUES(
+        #{memberId}
+        , #{boardId}
+        , #{categoryId}
+        , #{title}
+        , #{content}
+        , #{parent}
+        , NOW()
+        , #{hit}
+        , #{secret}
+        , false
+        )
+    </insert>
+
+    <select id="findById" parameterType="int" resultType="Post">
+        SELECT *
+        FROM boards
+        WHERE id=#{id}
+    </select>
+
+    <select id="findByFileId" parameterType="int" resultType="Post">
+        SELECT *
+        FROM boards b
+        JOIN file f
+        ON b.id=f.post_id
+        WHERE f.id=#{fileId}
+    </select>
+
+    <update id="update" parameterType="Post">
+        UPDATE boards
+        <trim prefix="SET" suffix="mod_date=NOW()">
+            <if test="categoryId != null">category_id=#{categoryId},</if>
+            <if test="title != null">title=#{title},</if>
+            <if test="content != null">content=#{content},</if>
+            <if test="secret != null">secret=#{secret},</if>
+        </trim>
+        WHERE id=#{id}
+    </update>
+
+    <delete id="deleteById" parameterType="int">
+        UPDATE boards
+        SET deleted=true, mod_date=NOW()
+        WHERE id=#{id} AND deleted=false
+    </delete>
+
+    <select id="findBoardDetail" parameterType="int" resultMap="BoardDetail">
+        SELECT
+        b.id
+        , b.title
+        , b.content
+        , b.reg_date
+        , b.mod_date
+        , b.hit
+        , b.secret
+        , b.parent
+        , b.deleted
+        , bi.id AS bi_id
+        , bi.name AS bi_name
+        , bi.subject AS bi_subject
+        , bi.access_list AS bi_access_list
+        , bi.access_write AS bi_access_write
+        , bi.access_read AS bi_access_read
+        , bi.access_reply_read AS bi_access_reply_read
+        , bi.access_reply_write AS bi_access_reply_write
+        , bi.access_comment AS bi_access_comment
+        , bi.access_file AS bi_access_file
+        , bi.board_type AS bi_board_type
+        , bi.allow_secret AS bi_allow_secret
+        , c.id AS c_id
+        , c.name AS c_name
+        , m.username AS m_username
+        , m.name AS m_name
+        , m.roles AS m_roles
+        , (SELECT EXISTS (SELECT id FROM file f WHERE b.id=f.post_id AND f.deleted=false)) AS file_exists
+        , (SELECT EXISTS (SELECT id FROM comment c WHERE b.id=c.post_id AND c.deleted=false)) AS comment_exists
+        , (SELECT EXISTS (SELECT id FROM boards bb WHERE b.id=bb.parent AND bb.deleted=false)) AS child_exists
+        FROM boards b, member m, category c, board_info bi
+        WHERE b.id=#{id} and b.member_id=m.id and b.category_id=c.id AND b.board_id=bi.id and b.deleted = false
+    </select>
+
+    <select id="findCommonBoardItems" parameterType="map" resultMap="CommonBoardItem">
+        SELECT
+        b.id
+        , b.board_id
+        , b.title
+        , b.hit
+        , b.reg_date
+        , c.name AS category_name
+        , m.name AS member_name
+        , (SELECT EXISTS (SELECT id FROM file f WHERE b.id=f.post_id AND f.deleted=false AND f.type='A' LIMIT 1)) AS
+        attached
+        , (SELECT EXISTS (SELECT id FROM file f WHERE b.id=f.post_id AND f.deleted=false AND f.type='C' LIMIT 1)) AS
+        imaged
+        , (SELECT url FROM file f WHERE b.id=f.post_id AND f.deleted=false AND f.type='T' ORDER BY reg_date LIMIT 1) AS
+        thumb_url
+        , (SELECT COUNT(id) FROM comment cm WHERE b.id=cm.post_id) AS comment_count
+        FROM boards b, member m, category c
+        WHERE b.member_id=m.id and b.category_id=c.id AND b.deleted=false
+        <if test="criteria.boardId != null">
+            AND b.board_id=#{criteria.boardId}
+        </if>
+        <if test="criteria.categoryId != null">
+            AND b.category_id=#{criteria.categoryId}
+        </if>
+        <if test="criteria.searchWord != null and criteria.searchWord != ''">
+            AND (b.title LIKE '%${criteria.searchWord}%'
+            OR b.content LIKE '%${criteria.searchWord}%')
+        </if>
+        <choose>
+            <when test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate != null and criteria.endDate != '')">
+                AND (b.reg_date BETWEEN #{criteria.startDate} AND #{criteria.endDate})
+            </when>
+            <when test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate == null or criteria.endDate == '')">
+                AND b.reg_date &gt;= #{criteria.startDate}
+            </when>
+            <when test="(criteria.startDate == null or criteria.startDate == '') and (criteria.endDate != null and criteria.endDate != '')">
+                AND b.reg_date &lt;= #{criteria.endDate}
+            </when>
+        </choose>
+        <if test="pageable.sort.sorted">
+            <trim prefix="ORDER BY">
+                <foreach item="order" index="i" collection="pageable.sort.orders" separator=", ">
+                    ${order.property} ${order.direction}
+                </foreach>
+            </trim>
+        </if>
+        LIMIT #{pageable.offset},#{pageable.limit}
+    </select>
+
+    <select id="findQnaBoardItems" parameterType="map" resultMap="QnaBoardItem">
+        SELECT
+        b.id
+        , b.board_id
+        , b.title
+        , b.hit
+        , b.reg_date
+        , b.mod_date
+        , b.secret
+        , c.name AS category_name
+        , m.name AS member_name
+        , (SELECT EXISTS (SELECT id FROM boards a WHERE a.parent=b.id LIMIT 1)) AS child_exists
+        FROM boards b, member m, category c
+        WHERE b.member_id=m.id and b.category_id=c.id AND b.deleted=false AND b.parent IS NULL
+        <if test="criteria.boardId != null">
+            AND b.board_id=#{criteria.boardId}
+        </if>
+        <if test="criteria.categoryId != null">
+            AND b.category_id=#{criteria.categoryId}
+        </if>
+        <if test="criteria.searchWord != null">
+            AND b.title LIKE '%${criteria.searchWord}%'
+        </if>
+        <choose>
+            <when test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate != null and criteria.endDate != '')">
+                AND (b.reg_date BETWEEN #{criteria.startDate} AND #{criteria.endDate})
+            </when>
+            <when test="(criteria.startDate != null and criteria.startDate != '') and (criteria.endDate == null or criteria.endDate == '')">
+                AND b.reg_date &gt;= #{criteria.startDate}
+            </when>
+            <when test="(criteria.startDate == null or criteria.startDate == '') and (criteria.endDate != null and criteria.endDate != '')">
+                AND b.reg_date &lt;= #{criteria.endDate}
+            </when>
+        </choose>
+        <if test="pageable.sort.sorted">
+            <trim prefix="ORDER BY">
+                <foreach item="order" index="i" collection="pageable.sort.orders" separator=", ">
+                    ${order.property} ${order.direction}
+                </foreach>
+            </trim>
+        </if>
+        LIMIT #{pageable.offset},#{pageable.limit}
+    </select>
+
+    <select id="findPostsCount" parameterType="SearchCriteria" resultType="int">
+        SELECT COUNT(id)
+        FROM boards
+        WHERE deleted=false AND parent IS NULL
+        <if test="boardId != null">
+            AND board_id=#{boardId}
+        </if>
+        <if test="categoryId != null">
+            AND category_id=#{categoryId}
+        </if>
+        <if test="searchWord != null and searchWord != ''">
+            AND (title LIKE '%${searchWord}%'
+            OR content LIKE '%${searchWord}%')
+        </if>
+        <choose>
+            <when test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+                AND reg_date BETWEEN #{startDate} AND #{endDate}
+            </when>
+            <when test="(startDate != null and startDate != '') and (endDate == null or endDate == '')">
+                AND reg_date &gt;= #{startDate}
+            </when>
+            <when test="(startDate == null or startDate == '') and (endDate != null and endDate != '')">
+                AND reg_date &lt;= #{endDate}
+            </when>
+        </choose>
+    </select>
+
+    <select id="existsById" parameterType="int" resultType="boolean">
+        SELECT EXISTS (
+        SELECT id
+        FROM boards
+        WHERE id=#{id} AND deleted=false
+        )
+    </select>
+
+    <select id="hasChild" parameterType="int" resultType="boolean">
+        SELECT EXISTS (
+        SELECT id
+        FROM boards
+        WHERE parent=#{parentId} AND deleted=false
+        LIMIT 1
+        )
+    </select>
+
+    <select id="findChild" parameterType="int" resultType="Integer">
+        SELECT id
+        FROM boards
+        WHERE parent=#{parentId} AND deleted=false
+        LIMIT 1
+    </select>
+
+    <update id="hitUp" parameterType="int">
+        UPDATE boards SET hit=hit+1 WHERE id=#{id}
+    </update>
+</mapper>

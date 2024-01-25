@@ -4,19 +4,12 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kinggora.portal.mapper.BoardInfoMapper">
 
-    <select id="findBoardInfoById" parameterType="int" resultType="BoardInfo">
+    <select id="findById" parameterType="int" resultType="BoardInfo">
         SELECT * FROM board_info WHERE id=#{id}
     </select>
 
-    <select id="findBoardInfos" resultType="BoardInfo">
+    <select id="findAll" resultType="BoardInfo">
         SELECT * FROM board_info
     </select>
-
-    <insert id="saveBoardInfo" useGeneratedKeys="true" keyProperty="id" parameterType="BoardInfo">
-        INSERT INTO board_info(name, subject) VALUES (
-        #{name}
-        , #{subject}
-        )
-    </insert>
 
 </mapper>

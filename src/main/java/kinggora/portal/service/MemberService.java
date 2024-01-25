@@ -1,17 +1,18 @@
 package kinggora.portal.service;
 
-import kinggora.portal.api.ErrorCode;
+import kinggora.portal.controller.api.error.ErrorCode;
 import kinggora.portal.domain.Member;
-import kinggora.portal.domain.dto.request.MemberDto;
-import kinggora.portal.domain.dto.request.PasswordDto;
 import kinggora.portal.exception.BizException;
+import kinggora.portal.model.request.MemberDto;
 import kinggora.portal.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Slf4j
+/**
+ * 회원 서비스
+ * 회원 등록, 수정, 삭제 등 회원 관련 서비스
+ */
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -22,77 +23,81 @@ public class MemberService {
 
     /**
      * 회원 등록
-     * 로그인 아이디 중복 시 BizException 발생
+     * 1. username 중복 여부 확인
+     * 2. dto를 도메인 객체로 변환 -> 리포지토리 호출
      *
      * @param dto 회원 등록 요청 데이터
      * @return 회원 id
+     * @throws BizException 이미 존재하는 username인 경우 발생
      */
-    public Integer createMember(MemberDto dto) {
+    public Integer createMember(MemberDto.Create dto) {
         if (checkDuplicateUsername(dto.getUsername())) {
             throw new BizException(ErrorCode.DUPLICATE_USERNAME);
         }
-        Member member = dto.toUser();
-        member.encodedPassword(passwordEncoder);
-        return memberRepository.saveMember(member);
+        Member member = dto.toUser(passwordEncoder);
+        return memberRepository.save(member);
     }
 
     /**
      * 회원 정보 수정
+     * 1. 수정할 회원 유효성 검증
+     * 2. dto를 도메인 객체로 변환 -> 리포지토리 호출
      *
-     * @param memberId 수정할 회원의 id
-     * @param dto      회원 업데이트 요청 데이터
+     * @param member 수정할 회원
+     * @param dto    회원 업데이트 요청 데이터
      */
-    public void updateMember(int memberId, MemberDto dto) {
-        memberRepository.updateMember(dto.toUpdateMember(memberId));
+    public void updateMember(Member member, MemberDto.Update dto) {
+        validateMember(member);
+        memberRepository.update(dto.toMember(member.getId()));
     }
 
     /**
      * 회원 비밀번호 수정
+     * 1. 수정할 회원 유효성 검증
+     * 2. 기존 비밀번호가 입력과 동일한지 확인
+     * 3. 새 비밀번호가 기존 비밀번호와 동일한지 확인
+     * 4. dto를 도메인 객체로 변환 -> 리포지토리 호출
      *
      * @param member 비밀번호를 수정할 회원
      * @param dto    비밀번호 업데이트 요청 데이터
+     * @throws BizException 기존 비밀번호가 입력과 동일하지 않거나, 새 비밀번호가 기존 비밀번호와 동일한 경우 발생
      */
-    public void updatePassword(Member member, PasswordDto dto) {
+    public void updatePassword(Member member, MemberDto.PasswordUpdate dto) {
+        validateMember(member);
         if (!checkPassword(dto.getCurrentPassword(), member.getPassword())) {
             throw new BizException(ErrorCode.INVALID_PASSWORD);
         } else if (checkPassword(dto.getNewPassword(), member.getPassword())) {
             throw new BizException(ErrorCode.DUPLICATE_PASSWORD);
         }
-        String encodedNewPassword = passwordEncoder.encode(dto.getNewPassword());
-        memberRepository.updatePassword(member.getId(), encodedNewPassword);
-    }
-
-    public void deleteMember(int id) {
-        Member member = findMemberById(id);
-        if (member.isDeleted()) {
-            throw new BizException(ErrorCode.ALREADY_DELETED_MEMBER);
-        }
-        memberRepository.deleteMember(id);
+        memberRepository.update(dto.toMember(member.getId(), passwordEncoder));
     }
 
     /**
-     * 회원 단건 조회 (id)
+     * 회원 탈퇴
+     * 1. 회원 유효성 검증
+     * 2. 리포지토리 호출
      *
-     * @param id 회원 id
-     * @return 회원
+     * @param member 탈퇴할 회원
      */
-    public Member findMemberById(int id) {
-        return memberRepository.findMemberById(id)
-                .orElseThrow(() -> new BizException(ErrorCode.MEMBER_NOT_FOUND));
+    public void deleteMember(Member member) {
+        validateMember(member);
+        memberRepository.deleteById(member.getId());
     }
 
     /**
      * 로그인 아이디 중복 검사
+     * 동일한 username이 존재하는지 확인
      *
-     * @param username 회원 로그인 id
-     * @return true: 중복O / false: 중복X
+     * @param username 회원 로그인 아이디
+     * @return true: 중복O, false: 중복X
      */
     private boolean checkDuplicateUsername(String username) {
-        return memberRepository.existsUsername(username);
+        return memberRepository.existsByUsername(username);
     }
 
     /**
-     * 비밀번호 확인
+     * 암호화되지 않은 비밀번호가 암호화된 비밀번호와 일치하는지 확인
+     * 실제 검증은 PasswordEncoder.matches()에 위임
      *
      * @param rawPassword     암호화 되지 않은 비밀번호
      * @param encodedPassword 암호화된 비밀번호
@@ -100,6 +105,18 @@ public class MemberService {
      */
     private boolean checkPassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
+    /**
+     * 회원 유효성 검증
+     *
+     * @param member 검증할 회원
+     * @throws BizException 탈퇴한 회원인 경우 발생
+     */
+    private void validateMember(Member member) {
+        if (member.isDeleted()) {
+            throw new BizException(ErrorCode.ALREADY_DELETED_MEMBER);
+        }
     }
 
 }

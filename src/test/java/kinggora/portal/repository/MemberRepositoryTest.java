@@ -28,8 +28,8 @@ class MemberRepositoryTest {
                 .name(UUID.randomUUID().toString().substring(0, 5))
                 .roles(List.of(MemberRole.ADMIN, MemberRole.USER))
                 .build();
-        Integer id = repository.saveMember(member);
-        Member findMember = repository.findMemberById(id).get();
+        Integer id = repository.save(member);
+        Member findMember = repository.findById(id).get();
         Assertions.assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
         Assertions.assertThat(findMember.getName()).isEqualTo(member.getName());
         Assertions.assertThat(findMember.getPassword()).isEqualTo(member.getPassword());

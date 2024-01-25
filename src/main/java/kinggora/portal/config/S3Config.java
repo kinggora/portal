@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+/**
+ * AWS S3 스토리지 설정
+ */
 @Configuration
 @PropertySource("classpath:/application-s3.properties")
 public class S3Config {

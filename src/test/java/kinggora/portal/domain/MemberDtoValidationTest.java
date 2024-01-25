@@ -1,6 +1,6 @@
 package kinggora.portal.domain;
 
-import kinggora.portal.domain.dto.request.MemberDto;
+import kinggora.portal.model.request.MemberDto;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +12,7 @@ import java.util.List;
 @Slf4j
 class MemberDtoValidationTest {
 
-    CustomValidator<MemberDto> validator;
+    CustomValidator<MemberDto.Create> validator;
     final String requireUsername = "{require.member.username}";
     final String requireName = "{require.member.name}";
     final String requirePassword = "{require.member.password}";
@@ -28,7 +28,7 @@ class MemberDtoValidationTest {
     @Test
     @DisplayName("@NotNull")
     void validateNotNull() {
-        MemberDto memberDto = MemberDto.builder()
+        MemberDto.Create memberDto = MemberDto.Create.builder()
                 .username(null)
                 .name(null)
                 .password(null)
@@ -59,7 +59,7 @@ class MemberDtoValidationTest {
                 "aBc456", // 대문자 포함
         };
         for (String username : invalidUsername) {
-            MemberDto memberDto = MemberDto.builder()
+            MemberDto.Create memberDto = MemberDto.Create.builder()
                     .username(username)
                     .build();
             List<String> messages = validator.getErrorMessage(memberDto);
@@ -77,7 +77,7 @@ class MemberDtoValidationTest {
                 "abcdefghij" // 10자, 영문
         };
         for (String username : validUsername) {
-            MemberDto memberDto = MemberDto.builder()
+            MemberDto.Create memberDto = MemberDto.Create.builder()
                     .username(username)
                     .build();
             List<String> messages = validator.getErrorMessage(memberDto);
@@ -107,7 +107,7 @@ class MemberDtoValidationTest {
                 "a@", // 특수문자 포함
         };
         for (String name : invalidName) {
-            MemberDto memberDto = MemberDto.builder()
+            MemberDto.Create memberDto = MemberDto.Create.builder()
                     .name(name)
                     .build();
             List<String> messages = validator.getErrorMessage(memberDto);
@@ -131,7 +131,7 @@ class MemberDtoValidationTest {
                 "1가a", // 숫자 + 한글 + 영문
         };
         for (String name : validName) {
-            MemberDto memberDto = MemberDto.builder()
+            MemberDto.Create memberDto = MemberDto.Create.builder()
                     .name(name)
                     .build();
             List<String> messages = validator.getErrorMessage(memberDto);
@@ -163,7 +163,7 @@ class MemberDtoValidationTest {
                 "abcd456?", // 정의되지 않은 특수문자 포함
         };
         for (String password : invalidPassword) {
-            MemberDto memberDto = MemberDto.builder()
+            MemberDto.Create memberDto = MemberDto.Create.builder()
                     .password(password)
                     .build();
             List<String> messages = validator.getErrorMessage(memberDto);
@@ -184,7 +184,7 @@ class MemberDtoValidationTest {
                 "ABC@1234", // 대문자 + 특수문자 + 숫자
         };
         for (String password : validPassword) {
-            MemberDto memberDto = MemberDto.builder()
+            MemberDto.Create memberDto = MemberDto.Create.builder()
                     .password(password)
                     .build();
             List<String> messages = validator.getErrorMessage(memberDto);

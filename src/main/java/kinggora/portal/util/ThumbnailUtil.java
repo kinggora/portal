@@ -16,12 +16,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 
+/**
+ * 썸네일 유틸리티
+ * 썸네일 이미지 생성, 업로드
+ * properties 파일로부터 썸네일 파일의 확장자, Content-Type, width, height 설정 초기화
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class ThumbnailUtil {
 
-    private final FileStore fileStore;
+
+    private final S3FileStore s3FileStore;
     @Value("${file.thumbnail.extension}")
     private String THUMB_EXT;
     @Value("${file.thumbnail.content-type}")
@@ -32,33 +38,19 @@ public class ThumbnailUtil {
     private int THUMB_HEIGHT;
 
     /**
-     * 원 이미지 파일에 대한 썸네일 이미지 파일 생성
+     * 썸네일 파일 업로드
+     * sourceMetaData 기반으로 썸네일 파일의 메타 데이터 생성
      *
-     * @param sourceImageFile 원 이미지 파일 resource
-     * @return 썸네일 이미지 byte array
+     * @param imageFile      원 이미지 파일
+     * @param sourceMetaData 원 이미지 파일 메타데이터
+     * @return 썸네일 파일 메타 데이터
      */
-    private byte[] createThumbnail(MultipartFile sourceImageFile) {
-        BufferedImage bufferedThumbImage = new BufferedImage(THUMB_WIDTH, THUMB_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
-        Graphics2D graphic = bufferedThumbImage.createGraphics();
-        byte[] thumbByteArray = {};
-        try (InputStream inputStream = sourceImageFile.getInputStream();
-             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            BufferedImage bufferedOrigImage = ImageIO.read(inputStream);
-            graphic.drawImage(bufferedOrigImage, 0, 0, THUMB_WIDTH, THUMB_HEIGHT, null);
-            ImageIO.write(bufferedThumbImage, THUMB_EXT, outputStream);
-            thumbByteArray = outputStream.toByteArray();
-        } catch (IOException e) {
-            log.error("ThumbnailUtil.createThumbnail", e);
-        }
-        return thumbByteArray;
-    }
-
     public UploadFile uploadThumbFile(MultipartFile imageFile, UploadFile sourceMetaData) {
         byte[] thumbnail = createThumbnail(imageFile);
         String origName = sourceMetaData.getStoreName();
         String storeName = createStoreFileName(sourceMetaData.getStoreName());
-        fileStore.uploadFile(thumbnail, storeName, THUMB_CONTENT_TYPE);
-        String url = fileStore.getUrl(storeName);
+        s3FileStore.uploadFile(thumbnail, storeName, THUMB_CONTENT_TYPE);
+        String url = s3FileStore.getUrl(storeName);
         return UploadFile.builder()
                 .postId(sourceMetaData.getPostId())
                 .url(url)
@@ -71,6 +63,34 @@ public class ThumbnailUtil {
                 .build();
     }
 
+    /**
+     * sourceImageFile에 대한 썸네일 이미지 파일 생성
+     *
+     * @param sourceImageFile 원 이미지 파일
+     * @return 썸네일 이미지 byte array
+     */
+    public byte[] createThumbnail(MultipartFile sourceImageFile) {
+        BufferedImage bufferedThumbImage = new BufferedImage(THUMB_WIDTH, THUMB_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D graphic = bufferedThumbImage.createGraphics();
+        byte[] thumbByteArray = null;
+        try (InputStream inputStream = sourceImageFile.getInputStream();
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            BufferedImage bufferedOrigImage = ImageIO.read(inputStream);
+            graphic.drawImage(bufferedOrigImage, 0, 0, THUMB_WIDTH, THUMB_HEIGHT, null);
+            ImageIO.write(bufferedThumbImage, THUMB_EXT, outputStream);
+            thumbByteArray = outputStream.toByteArray();
+        } catch (IOException e) {
+            log.error("ThumbnailUtil.createThumbnail", e);
+        }
+        return thumbByteArray;
+    }
+
+    /**
+     * 썸네일 파일명 생성
+     *
+     * @param source 원 파일명
+     * @return 썸네일 파일명
+     */
     public String createStoreFileName(String source) {
         int pos = source.lastIndexOf(".");
         if (pos == -1) {

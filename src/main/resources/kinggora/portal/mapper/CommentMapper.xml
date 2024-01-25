@@ -18,7 +18,7 @@
         </association>
     </resultMap>
 
-    <insert id="saveComment" parameterType="Comment" useGeneratedKeys="true" keyProperty="id">
+    <insert id="save" parameterType="Comment" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO comment(
         post_id
         , member_id
@@ -42,23 +42,13 @@
         )
     </insert>
 
-    <select id="findMaxRef" resultType="int">
-        SELECT IFNULL(MAX(ref), 0) FROM comment
-    </select>
-
-    <update id="updateRefOrder" parameterType="map">
-        UPDATE comment
-        SET ref_order = ref_order + 1
-        WHERE ref=#{ref} AND (ref_order > #{refOrder} OR ref_order = #{refOrder})
-    </update>
-
-    <select id="findCommentById" parameterType="int" resultType="Comment">
+    <select id="findById" parameterType="int" resultType="Comment">
         SELECT *
         FROM comment
         WHERE id=#{id}
     </select>
 
-    <select id="findComments" parameterType="map" resultMap="CommentResponse">
+    <select id="findByPostId" parameterType="map" resultMap="CommentResponse">
         SELECT
         c.id
         , c.post_id
@@ -75,23 +65,34 @@
         ORDER BY ref, ref_order
     </select>
 
-    <update id="updateComment" parameterType="Comment">
+    <update id="update" parameterType="Comment">
         UPDATE comment
         SET content=#{content}, mod_date=NOW()
         WHERE id=#{id}
     </update>
 
-    <update id="hideComment" parameterType="int">
+    <update id="hideById" parameterType="int">
         UPDATE comment
         SET deleted=true, mod_date=NOW()
         WHERE id=#{id}
     </update>
 
-    <update id="deleteComment" parameterType="int">
+    <update id="deleteById" parameterType="int">
         DELETE FROM comment WHERE id=#{id}
     </update>
 
-    <select id="childExists" parameterType="int" resultType="boolean">
+    <select id="getMaxRef" resultType="int">
+        SELECT IFNULL(MAX(ref), 0) FROM comment
+    </select>
+
+    <update id="refOrderUp" parameterType="map">
+        UPDATE comment
+        SET ref_order = ref_order + 1
+        WHERE ref=#{ref} AND (ref_order > #{refOrder} OR ref_order = #{refOrder})
+    </update>
+
+
+    <select id="hasChild" parameterType="int" resultType="boolean">
         SELECT EXISTS (
         SELECT id
         FROM comment
@@ -100,10 +101,10 @@
         )
     </select>
 
-    <select id="findChildCount" parameterType="int" resultType="int">
+    <select id="getChildCount" parameterType="int" resultType="int">
         SELECT COUNT(id)
         FROM comment
-        WHERE parent=#{parentId}
+        WHERE parent=#{id}
     </select>
 
     <select id="isOnlyMinimumDepth" parameterType="Comment" resultType="boolean">
@@ -114,8 +115,10 @@
         )
     </select>
 
-    <select id="findMaxRefOrder" parameterType="int" resultType="int">
-        SELECT MAX(ref_order) FROM comment WHERE ref=#{ref}
+    <select id="getMaxRefOrder" parameterType="int" resultType="int">
+        SELECT MAX(ref_order)
+        FROM comment
+        WHERE ref=#{ref}
     </select>
 
     <select id="findRefOrderOfChild" parameterType="Comment" resultType="int">
