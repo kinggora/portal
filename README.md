@@ -52,8 +52,9 @@ C:.
 │          │  └─error      
 │          ├─repository  
 │          ├─security
+│          │  ├─auth
 │          │  ├─exception
-│          │  │  └─handler         
+│          │  │  └─handler   
 │          │  └─user      
 │          ├─service   
 │          ├─util
