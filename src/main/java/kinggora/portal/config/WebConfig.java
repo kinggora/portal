@@ -3,7 +3,7 @@ package kinggora.portal.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import kinggora.portal.controller.converter.IdConverter;
+import kinggora.portal.web.converter.IdConverter;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

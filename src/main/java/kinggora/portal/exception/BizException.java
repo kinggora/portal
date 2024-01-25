@@ -1,6 +1,5 @@
 package kinggora.portal.exception;
 
-import kinggora.portal.controller.api.error.ErrorCode;
 import lombok.Getter;
 
 /**

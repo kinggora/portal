@@ -1,8 +1,8 @@
 package kinggora.portal.repository;
 
-import kinggora.portal.controller.api.error.ErrorCode;
 import kinggora.portal.domain.UploadFile;
 import kinggora.portal.exception.BizException;
+import kinggora.portal.exception.ErrorCode;
 import kinggora.portal.mapper.FileMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

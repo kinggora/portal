@@ -1,8 +1,8 @@
 package kinggora.portal.util;
 
-import kinggora.portal.controller.api.error.ErrorCode;
 import kinggora.portal.domain.Member;
 import kinggora.portal.exception.BizException;
+import kinggora.portal.exception.ErrorCode;
 import kinggora.portal.security.user.CustomUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

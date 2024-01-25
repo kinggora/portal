@@ -1,21 +1,21 @@
 package kinggora.portal.service;
 
-import kinggora.portal.controller.api.error.ErrorCode;
 import kinggora.portal.domain.Pageable;
 import kinggora.portal.domain.Post;
 import kinggora.portal.domain.type.OrderDirection;
 import kinggora.portal.exception.BizException;
-import kinggora.portal.model.request.PagingCriteria;
-import kinggora.portal.model.request.PostDto;
-import kinggora.portal.model.request.SearchCriteria;
-import kinggora.portal.model.response.*;
+import kinggora.portal.exception.ErrorCode;
+import kinggora.portal.model.data.request.PagingCriteria;
+import kinggora.portal.model.data.request.PostDto;
+import kinggora.portal.model.data.request.SearchCriteria;
+import kinggora.portal.model.data.response.*;
 import kinggora.portal.repository.BoardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.OptionalInt;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -23,6 +23,7 @@ import java.util.OptionalInt;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final CategoryService categoryService;
 
     /**
      * 게시글 저장
@@ -33,6 +34,7 @@ public class BoardService {
      * @return 저장 게시글 id
      */
     public int savePost(int boardId, int memberId, PostDto dto) {
+        validateCategory(dto.getCategoryId(), boardId);
         return boardRepository.save(dto.toRootPost(boardId, memberId));
     }
 
@@ -61,6 +63,7 @@ public class BoardService {
         if (boardRepository.hasChild(post.getId())) {
             throw new BizException(ErrorCode.ANSWER_ALREADY_EXISTS);
         }
+        validateCategory(dto.getCategoryId(), post.getBoardId());
         boardRepository.update(dto.toUpdatePost(postId));
     }
 
@@ -103,7 +106,7 @@ public class BoardService {
     /**
      * 검색 조건에 해당하는 게시글 목록 조회 + 페이징 처리
      * boardType에 따라 다른 BoardItem 상속 객체 반환
-     * boardType == L : CommonBoardItem
+     * boardType == L | I : CommonBoardItem
      * boardType == Q : QnaBoardItem
      *
      * @param boardType      게시판 타입
@@ -115,6 +118,7 @@ public class BoardService {
     public List<? extends BoardItem> findBoardItems(String boardType, PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
         switch (boardType) {
             case "L":
+            case "I":
                 return findCommonBoardItems(pagingCriteria, searchCriteria);
             case "Q":
                 return findQnaBoardItems(pagingCriteria, searchCriteria);
@@ -132,7 +136,7 @@ public class BoardService {
      * @throws BizException 자식이 존재하지 않는 경우 발생
      */
     public BoardDetail findChildBoardDetail(int parentId) {
-        OptionalInt child = boardRepository.findChild(parentId);
+        Optional<Integer> child = boardRepository.findChild(parentId);
         int id = child.orElseThrow(() -> new BizException(ErrorCode.POST_NOT_FOUND));
         return findBoardDetail(id);
     }
@@ -225,4 +229,9 @@ public class BoardService {
         boardRepository.hitUp(id);
     }
 
+    private void validateCategory(int categoryId, int boardId) {
+        if (!categoryService.isCategoryOf(categoryId, boardId)) {
+            throw new BizException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 카테고리입니다.");
+        }
+    }
 }

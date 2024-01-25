@@ -1,9 +1,9 @@
 package kinggora.portal.service;
 
-import kinggora.portal.controller.api.error.ErrorCode;
 import kinggora.portal.domain.Member;
 import kinggora.portal.exception.BizException;
-import kinggora.portal.model.request.MemberDto;
+import kinggora.portal.exception.ErrorCode;
+import kinggora.portal.model.data.request.MemberDto;
 import kinggora.portal.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -1,15 +1,15 @@
 package kinggora.portal.service;
 
 import io.jsonwebtoken.lang.Collections;
-import kinggora.portal.controller.api.error.ErrorCode;
 import kinggora.portal.domain.UploadFile;
 import kinggora.portal.domain.type.FileType;
 import kinggora.portal.exception.BizException;
-import kinggora.portal.model.request.FileDto;
+import kinggora.portal.exception.ErrorCode;
+import kinggora.portal.model.data.request.FileDto;
 import kinggora.portal.repository.FileRepository;
+import kinggora.portal.util.FileValidator;
 import kinggora.portal.util.S3FileStore;
 import kinggora.portal.util.ThumbnailUtil;
-import kinggora.portal.util.validation.FileValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

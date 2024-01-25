@@ -2,16 +2,15 @@ package kinggora.portal.mapper;
 
 import kinggora.portal.domain.Pageable;
 import kinggora.portal.domain.Post;
-import kinggora.portal.model.request.SearchCriteria;
-import kinggora.portal.model.response.BoardDetail;
-import kinggora.portal.model.response.CommonBoardItem;
-import kinggora.portal.model.response.QnaBoardItem;
+import kinggora.portal.model.data.request.SearchCriteria;
+import kinggora.portal.model.data.response.BoardDetail;
+import kinggora.portal.model.data.response.CommonBoardItem;
+import kinggora.portal.model.data.response.QnaBoardItem;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 /**
  * MyBatis Mapper Interface
@@ -44,5 +43,5 @@ public interface BoardMapper {
 
     boolean hasChild(int parentId);
 
-    OptionalInt findChild(int parentId);
+    Optional<Integer> findChild(int parentId);
 }

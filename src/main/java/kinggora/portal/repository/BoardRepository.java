@@ -1,21 +1,20 @@
 package kinggora.portal.repository;
 
-import kinggora.portal.controller.api.error.ErrorCode;
 import kinggora.portal.domain.Pageable;
 import kinggora.portal.domain.Post;
 import kinggora.portal.exception.BizException;
+import kinggora.portal.exception.ErrorCode;
 import kinggora.portal.mapper.BoardMapper;
-import kinggora.portal.model.request.SearchCriteria;
-import kinggora.portal.model.response.BoardDetail;
-import kinggora.portal.model.response.CommonBoardItem;
-import kinggora.portal.model.response.QnaBoardItem;
+import kinggora.portal.model.data.request.SearchCriteria;
+import kinggora.portal.model.data.response.BoardDetail;
+import kinggora.portal.model.data.response.CommonBoardItem;
+import kinggora.portal.model.data.response.QnaBoardItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 /**
  * 게시글 리포지토리
@@ -156,7 +155,7 @@ public class BoardRepository {
      * @param parentId 부모 id
      * @return 자식 게시글 id or null
      */
-    public OptionalInt findChild(int parentId) {
+    public Optional<Integer> findChild(int parentId) {
         return mapper.findChild(parentId);
     }
 

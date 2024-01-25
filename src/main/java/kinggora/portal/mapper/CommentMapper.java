@@ -1,7 +1,7 @@
 package kinggora.portal.mapper;
 
 import kinggora.portal.domain.Comment;
-import kinggora.portal.model.response.CommentResponse;
+import kinggora.portal.model.data.response.CommentResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

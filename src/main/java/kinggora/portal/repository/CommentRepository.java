@@ -1,10 +1,10 @@
 package kinggora.portal.repository;
 
-import kinggora.portal.controller.api.error.ErrorCode;
 import kinggora.portal.domain.Comment;
 import kinggora.portal.exception.BizException;
+import kinggora.portal.exception.ErrorCode;
 import kinggora.portal.mapper.CommentMapper;
-import kinggora.portal.model.response.CommentResponse;
+import kinggora.portal.model.data.response.CommentResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;

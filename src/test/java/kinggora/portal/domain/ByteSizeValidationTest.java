@@ -1,6 +1,6 @@
 package kinggora.portal.domain;
 
-import kinggora.portal.annotation.ByteSize;
+import kinggora.portal.web.validation.ByteSize;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.assertj.core.api.Assertions;

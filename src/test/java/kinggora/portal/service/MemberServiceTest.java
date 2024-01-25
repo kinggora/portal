@@ -1,8 +1,7 @@
 package kinggora.portal.service;
 
 import kinggora.portal.domain.Member;
-import kinggora.portal.domain.dto.response.TokenInfo;
-import kinggora.portal.domain.type.MemberRole;
+import kinggora.portal.model.data.request.MemberDto;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -10,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -26,38 +24,38 @@ class MemberServiceTest {
         String id = UUID.randomUUID().toString().substring(0, 8);
         String password = UUID.randomUUID().toString().substring(0, 8);
 
-        Member newMember = Member.builder()
+        MemberDto.Create newMember = MemberDto.Create.builder()
                 .username(id)
                 .password(password)
                 .name(UUID.randomUUID().toString().substring(0, 5))
-                .roles(List.of(MemberRole.USER))
                 .build();
-        memberService.register(newMember);
+        memberService.createMember(newMember);
 
         Member signInMember = Member.builder()
                 .username(id)
                 .password(password)
                 .build();
-        TokenInfo tokenInfo = memberService.signIn(signInMember);
-        log.info("token={}", tokenInfo);
+        //TokenInfo tokenInfo = authService.signIn(signInMember);
+        //log.info("token={}", tokenInfo);
     }
 
     @Test
     void 중복_아이디_가입_시도() {
         String id = UUID.randomUUID().toString().substring(0, 8);
-        Member member = Member.builder()
+
+        MemberDto.Create member = MemberDto.Create.builder()
                 .username(id)
                 .password(UUID.randomUUID().toString().substring(0, 8))
                 .name(UUID.randomUUID().toString().substring(0, 5))
                 .build();
-        memberService.register(member);
+        memberService.createMember(member);
 
-        Member duplicateMember = Member.builder()
+        MemberDto.Create duplicateMember = MemberDto.Create.builder()
                 .username(id)
                 .password(UUID.randomUUID().toString().substring(0, 8))
                 .name(UUID.randomUUID().toString().substring(0, 5))
                 .build();
         Assertions.assertThrows(RuntimeException.class,
-                () -> memberService.register(duplicateMember));
+                () -> memberService.createMember(duplicateMember));
     }
 }
