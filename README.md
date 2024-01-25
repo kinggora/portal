@@ -32,43 +32,44 @@ Spring Boot API + Vue.Js SPA
 
 ## 프로젝트 구조
 ```bash
+폴더 PATH의 목록입니다.
+볼륨 일련 번호는 3AD6-BCF2입니다.
+C:.
+├─generated
 ├─java
 │  └─kinggora
 │      └─portal
-│          ├─annotation
-│          │  └─validator     
-│          ├─config     
-│          ├─controller
-│          │  ├─api
-│          │  │  ├─data    
-│          │  │  └─error      
-│          │  ├─converter   
-│          │  └─evaluator         
-│          ├─domain
+│          ├─config    
+│          ├─domain 
 │          │  └─type
-│          │      └─typehandler          
-│          ├─exception 
-│          │  └─handler        
-│          ├─mapper    
+│          │      └─typehandler            
+│          ├─exception   
+│          ├─mapper  
 │          ├─model
-│          │  ├─request
-│          │  └─response      
-│          ├─repository   
+│          │  ├─data
+│          │  │  ├─request     
+│          │  │  └─response      
+│          │  └─error      
+│          ├─repository  
 │          ├─security
-│          │  ├─filter    
-│          │  ├─handler   
-│          │  └─user        
-│          ├─service    
-│          └─util                     
-└─resources 
+│          │  ├─exception
+│          │  │  └─handler         
+│          │  └─user      
+│          ├─service   
+│          ├─util
+│          │  └─validation      
+│          └─web
+│              ├─controller
+│              ├─converter
+│              ├─evaluator
+│              └─validation
+│                  └─validator                
+└─resources
     ├─kinggora
     │  └─portal
-    │      └─mapper             
-    ├─messages
-    ├─static
-    │  ├─css    
-    │  ├─fonts   
-    │  └─js      
+    │      └─mapper          
+    ├─messages 
+    ├─static : front build result
     └─templates
 ```
 ## Preview
