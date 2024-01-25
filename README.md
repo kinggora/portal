@@ -57,8 +57,7 @@ C:.
 │          │  │  └─handler   
 │          │  └─user      
 │          ├─service   
-│          ├─util
-│          │  └─validation      
+│          ├─util  
 │          └─web
 │              ├─controller
 │              ├─converter
