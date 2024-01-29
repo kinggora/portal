@@ -28,7 +28,7 @@ Spring Boot API + Vue.Js SPA
 - 검색: 게시 일자(from, to), 카테고리, 검색어
 - 대댓글: max depth 5
 ### Account
-- 로그인/회원가입, 회원정보 수정, 작성 글 목록
+- 로그인/회원가입, 회원정보 수정, 작성 게시글/댓글 관리
 
 ## 프로젝트 구조
 ```bash
@@ -65,7 +65,7 @@ Spring Boot API + Vue.Js SPA
     │  └─portal
     │      └─mapper          
     ├─messages 
-    ├─static : front build result
+    ├─static : vue.js build result
     └─templates
 ```
 ## Preview
