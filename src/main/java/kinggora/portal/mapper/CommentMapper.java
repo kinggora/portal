@@ -1,7 +1,10 @@
 package kinggora.portal.mapper;
 
 import kinggora.portal.domain.Comment;
-import kinggora.portal.model.data.response.CommentResponse;
+import kinggora.portal.domain.Pageable;
+import kinggora.portal.model.data.request.CommentCriteria;
+import kinggora.portal.model.data.response.MyComment;
+import kinggora.portal.model.data.response.PostComment;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,7 +22,13 @@ public interface CommentMapper {
 
     Optional<Comment> findById(int id);
 
-    List<CommentResponse> findByPostId(int postId);
+    List<PostComment> findComments(@Param("pageable") Pageable pageable, @Param("criteria") CommentCriteria criteria);
+
+    List<MyComment> findMyComments(@Param("pageable") Pageable pageable, @Param("criteria") CommentCriteria criteria);
+
+    List<PostComment> findPostComments(@Param("pageable") Pageable pageable, @Param("criteria") CommentCriteria criteria);
+
+    int findCommentsCount(CommentCriteria criteria);
 
     int update(Comment comment);
 

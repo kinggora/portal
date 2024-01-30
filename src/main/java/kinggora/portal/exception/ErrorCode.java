@@ -43,11 +43,10 @@ public enum ErrorCode {
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, -444, "존재하지 않는 댓글입니다"),
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, -445, "존재하지 않는 게시판입니다"),
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, -446, "존재하지 않는 카테고리입니다"),
-    ALREADY_DELETED_MEMBER(HttpStatus.NOT_FOUND, -447, "삭제된 회원입니다"),
+    ALREADY_DELETED_MEMBER(HttpStatus.NOT_FOUND, -447, "탈퇴한 회원입니다"),
     ALREADY_DELETED_POST(HttpStatus.NOT_FOUND, -448, "삭제된 게시글입니다"),
     ALREADY_DELETED_FILE(HttpStatus.NOT_FOUND, -449, "삭제된 파일입니다"),
     ALREADY_DELETED_COMMENT(HttpStatus.NOT_FOUND, -450, "삭제된 댓글입니다"),
-    ALREADY_DELETED_BOARD(HttpStatus.NOT_FOUND, -451, "삭제된 게시판입니다"),
 
     /* 405 METHOD_NOT_ALLOWED : 허용하지 않는 method 요청 */
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, -455, "허용되지 않은 method 입니다"),

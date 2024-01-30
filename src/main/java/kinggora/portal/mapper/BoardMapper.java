@@ -2,7 +2,7 @@ package kinggora.portal.mapper;
 
 import kinggora.portal.domain.Pageable;
 import kinggora.portal.domain.Post;
-import kinggora.portal.model.data.request.SearchCriteria;
+import kinggora.portal.model.data.request.BoardCriteria;
 import kinggora.portal.model.data.response.BoardDetail;
 import kinggora.portal.model.data.response.CommonBoardItem;
 import kinggora.portal.model.data.response.QnaBoardItem;
@@ -33,11 +33,11 @@ public interface BoardMapper {
 
     int hitUp(int id);
 
-    List<CommonBoardItem> findCommonBoardItems(@Param("pageable") Pageable pageable, @Param("criteria") SearchCriteria searchCriteria);
+    List<CommonBoardItem> findCommonBoardItems(@Param("pageable") Pageable pageable, @Param("criteria") BoardCriteria criteria);
 
-    List<QnaBoardItem> findQnaBoardItems(@Param("pageable") Pageable pageable, @Param("criteria") SearchCriteria searchCriteria);
+    List<QnaBoardItem> findQnaBoardItems(@Param("pageable") Pageable pageable, @Param("criteria") BoardCriteria criteria);
 
-    int findPostsCount(SearchCriteria sc);
+    int findPostsCount(BoardCriteria criteria);
 
     boolean existsById(int id);
 

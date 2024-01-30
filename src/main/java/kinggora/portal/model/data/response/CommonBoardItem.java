@@ -15,6 +15,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class CommonBoardItem extends BoardItem {
+
     private int commentCount;
     private boolean attached;
     private boolean imaged;

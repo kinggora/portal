@@ -15,5 +15,7 @@ public interface BoardInfoMapper {
 
     Optional<BoardInfo> findById(int id);
 
-    List<BoardInfo> findAll();
+    List<BoardInfo> findBoardInfos();
+
+    Optional<BoardInfo> findByPostId(int postId);
 }

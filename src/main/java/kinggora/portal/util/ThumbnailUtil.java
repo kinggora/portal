@@ -69,7 +69,7 @@ public class ThumbnailUtil {
      * @param sourceImageFile 원 이미지 파일
      * @return 썸네일 이미지 byte array
      */
-    public byte[] createThumbnail(MultipartFile sourceImageFile) {
+    private byte[] createThumbnail(MultipartFile sourceImageFile) {
         BufferedImage bufferedThumbImage = new BufferedImage(THUMB_WIDTH, THUMB_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D graphic = bufferedThumbImage.createGraphics();
         byte[] thumbByteArray = null;

@@ -3,10 +3,12 @@ package kinggora.portal.web.evaluator;
 import kinggora.portal.domain.Comment;
 import kinggora.portal.domain.Post;
 import kinggora.portal.model.data.request.Id;
+import kinggora.portal.security.user.CustomUserDetails;
 import kinggora.portal.service.BoardService;
 import kinggora.portal.service.CommentService;
-import kinggora.portal.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,7 +21,6 @@ import org.springframework.stereotype.Component;
 public class OwnerPermissionEvaluator {
     private final BoardService boardService;
     private final CommentService commentService;
-    private final SecurityUtil securityUtil;
 
     /**
      * 게시글에 대한 소유권 확인
@@ -34,7 +35,7 @@ public class OwnerPermissionEvaluator {
         }
         Id postId = (Id) targetDomainObject;
         Post post = boardService.findPostById(postId.getId());
-        return securityUtil.getCurrentMemberId().equals(post.getMemberId());
+        return getSignInMemberId().equals(post.getMemberId());
     }
 
     /**
@@ -50,7 +51,7 @@ public class OwnerPermissionEvaluator {
         }
         Id commentId = (Id) targetDomainObject;
         Comment comment = commentService.findCommentById(commentId.getId());
-        return securityUtil.getCurrentMemberId().equals(comment.getMemberId());
+        return getSignInMemberId().equals(comment.getMemberId());
     }
 
     /**
@@ -66,8 +67,15 @@ public class OwnerPermissionEvaluator {
             return false;
         }
         Id fileId = (Id) targetDomainObject;
-        Post post = boardService.findPostByFileId(fileId.getId());
-        return securityUtil.getCurrentMemberId().equals(post.getMemberId());
+        Post post = boardService.findByFileId(fileId.getId());
+        return getSignInMemberId().equals(post.getMemberId());
     }
 
+    private Integer getSignInMemberId() {
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null) {
+            return null;
+        }
+        return ((CustomUserDetails) authentication.getPrincipal()).getId();
+    }
 }

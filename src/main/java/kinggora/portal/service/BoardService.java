@@ -1,14 +1,18 @@
 package kinggora.portal.service;
 
+import kinggora.portal.domain.BoardInfo;
 import kinggora.portal.domain.Pageable;
 import kinggora.portal.domain.Post;
 import kinggora.portal.domain.type.OrderDirection;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.exception.ErrorCode;
+import kinggora.portal.model.data.request.BoardCriteria;
 import kinggora.portal.model.data.request.PagingCriteria;
 import kinggora.portal.model.data.request.PostDto;
-import kinggora.portal.model.data.request.SearchCriteria;
-import kinggora.portal.model.data.response.*;
+import kinggora.portal.model.data.response.BoardDetail;
+import kinggora.portal.model.data.response.BoardItem;
+import kinggora.portal.model.data.response.CommonBoardItem;
+import kinggora.portal.model.data.response.QnaBoardItem;
 import kinggora.portal.repository.BoardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +27,7 @@ import java.util.Optional;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final BoardInfoService boardInfoService;
     private final CategoryService categoryService;
 
     /**
@@ -34,7 +39,8 @@ public class BoardService {
      * @return 저장 게시글 id
      */
     public int savePost(int boardId, int memberId, PostDto dto) {
-        validateCategory(dto.getCategoryId(), boardId);
+        Post post = dto.toRootPost(boardId, memberId);
+        validatePost(post);
         return boardRepository.save(dto.toRootPost(boardId, memberId));
     }
 
@@ -48,23 +54,21 @@ public class BoardService {
      */
     public int saveChildPost(int parentId, int memberId, PostDto dto) {
         Post parent = findPostById(parentId);
-        return boardRepository.save(dto.toChildPost(parent, memberId));
+        Post childPost = dto.toChildPost(parent, memberId);
+        validatePost(childPost);
+        return boardRepository.save(childPost);
     }
 
     /**
      * 게시글 수정
-     * 자식 게시글 존재 시 게시물 수정 불가
      *
      * @param postId 수정할 게시글 id
      * @param dto    수정할 데이터
      */
     public void updatePost(int postId, PostDto dto) {
-        Post post = findPostById(postId);
-        if (boardRepository.hasChild(post.getId())) {
-            throw new BizException(ErrorCode.ANSWER_ALREADY_EXISTS);
-        }
-        validateCategory(dto.getCategoryId(), post.getBoardId());
-        boardRepository.update(dto.toUpdatePost(postId));
+        Post updatePost = dto.toUpdatePost(postId);
+        validatePost(updatePost);
+        boardRepository.update(updatePost);
     }
 
     /**
@@ -93,6 +97,18 @@ public class BoardService {
     }
 
     /**
+     * 파일이 포함된 게시물 조회
+     *
+     * @param fileId 파일 id
+     * @return 게시글 정보
+     * @throws BizException 게시글이 존재하지 않는 경우 발생
+     */
+    public Post findByFileId(int fileId) {
+        return boardRepository.findByFileId(fileId)
+                .orElseThrow(() -> new BizException(ErrorCode.POST_NOT_FOUND));
+    }
+
+    /**
      * 게시글 상세 조회
      *
      * @param id 게시글 id
@@ -111,17 +127,17 @@ public class BoardService {
      *
      * @param boardType      게시판 타입
      * @param pagingCriteria 페이징 조건
-     * @param searchCriteria 검색 조건
+     * @param boardCriteria  필터링 조건
      * @return 게시글 목록 리스트
      * @throws BizException 정의되지 않은 boardType 인 경우 발생
      */
-    public List<? extends BoardItem> findBoardItems(String boardType, PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
+    public List<? extends BoardItem> findBoardItems(String boardType, PagingCriteria pagingCriteria, BoardCriteria boardCriteria) {
         switch (boardType) {
             case "L":
             case "I":
-                return findCommonBoardItems(pagingCriteria, searchCriteria);
+                return findCommonBoardItems(pagingCriteria, boardCriteria);
             case "Q":
-                return findQnaBoardItems(pagingCriteria, searchCriteria);
+                return findQnaBoardItems(pagingCriteria, boardCriteria);
             default:
                 throw new BizException(ErrorCode.INVALID_INPUT_VALUE);
         }
@@ -142,33 +158,17 @@ public class BoardService {
     }
 
     /**
-     * 파일이 포함된 게시물 조회
-     *
-     * @param fileId 파일 id
-     * @return 게시글 정보
-     * @throws BizException 게시글이 존재하지 않거나 이미 삭제된 경우 발생
-     */
-    public Post findPostByFileId(int fileId) {
-        Post post = boardRepository.findByFileId(fileId)
-                .orElseThrow(() -> new BizException(ErrorCode.POST_NOT_FOUND));
-        if (post.isDeleted()) {
-            throw new BizException(ErrorCode.ALREADY_DELETED_POST);
-        }
-        return post;
-    }
-
-    /**
      * 검색 조건에 해당하는 일반 게시글 조회
      * 생성 날짜(regDate) 내림차 순 정렬로 페이징 처리
      *
      * @param pagingCriteria 페이징 조건
-     * @param searchCriteria 검색 조건
+     * @param boardCriteria  필터링 조건
      * @return 게시글 리스트
      */
-    private List<CommonBoardItem> findCommonBoardItems(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
+    public List<CommonBoardItem> findCommonBoardItems(PagingCriteria pagingCriteria, BoardCriteria boardCriteria) {
         Pageable.Order regOrder = new Pageable.Order("reg_date", OrderDirection.DESC);
         Pageable pageable = new Pageable(pagingCriteria.getPage(), pagingCriteria.getSize(), List.of(regOrder));
-        return boardRepository.findCommonBoardItems(pageable, searchCriteria);
+        return boardRepository.findCommonBoardItems(pageable, boardCriteria);
     }
 
     /**
@@ -176,13 +176,13 @@ public class BoardService {
      * 생성 날짜(regDate) 내림차 순 정렬로 페이징 처리
      *
      * @param pagingCriteria 페이징 조건
-     * @param searchCriteria 검색 조건
+     * @param boardCriteria  필터링 조건
      * @return QnaBoardItem 리스트
      */
-    private List<QnaBoardItem> findQnaBoardItems(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
+    public List<QnaBoardItem> findQnaBoardItems(PagingCriteria pagingCriteria, BoardCriteria boardCriteria) {
         Pageable.Order regOrder = new Pageable.Order("reg_date", OrderDirection.DESC);
         Pageable pageable = new Pageable(pagingCriteria.getPage(), pagingCriteria.getSize(), List.of(regOrder));
-        return boardRepository.findQnaBoardItems(pageable, searchCriteria);
+        return boardRepository.findQnaBoardItems(pageable, boardCriteria);
     }
 
     /**
@@ -190,34 +190,24 @@ public class BoardService {
      * 조회수(hit) 내림차, 생성 날짜(reg_date) 내림차 순 정렬로 페이징 처리
      *
      * @param pagingCriteria 페이징 조건
-     * @param searchCriteria 검색 조건
+     * @param boardCriteria  필터링 조건
      * @return CommonBoardItem 리스트
      */
-    public List<CommonBoardItem> findHitBoardItems(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
+    public List<CommonBoardItem> findHitBoardItems(PagingCriteria pagingCriteria, BoardCriteria boardCriteria) {
         Pageable.Order hitOrder = new Pageable.Order("hit", OrderDirection.DESC);
         Pageable.Order regOrder = new Pageable.Order("reg_date", OrderDirection.DESC);
         Pageable pageable = new Pageable(pagingCriteria.getPage(), pagingCriteria.getSize(), List.of(hitOrder, regOrder));
-        return boardRepository.findCommonBoardItems(pageable, searchCriteria);
+        return boardRepository.findCommonBoardItems(pageable, boardCriteria);
     }
 
     /**
-     * 페이징 메타 데이터(PageInfo) 생성
-     * totalCount = 검색 조건으로 필터링한 row 수 조회
-     * totalPage = totalCount가 0이라면 1, 아니라면 pageSize를 이용하여 계산
+     * 필터링 조건에 대한 게시글 수 조회
      *
-     * @param pagingCriteria 페이징 조건
-     * @param searchCriteria 검색 조건
-     * @return PageInfo
+     * @param boardCriteria 필터링 조건
+     * @return 게시글 수
      */
-    public PageInfo getPageInfo(PagingCriteria pagingCriteria, SearchCriteria searchCriteria) {
-        int totalCount = boardRepository.findPostsCount(searchCriteria);
-        int totalPages = totalCount == 0 ? 1 : (totalCount - 1) / pagingCriteria.getSize() + 1;
-        return PageInfo.builder()
-                .pageNum(pagingCriteria.getPage())
-                .pageSize(pagingCriteria.getSize())
-                .totalCount(totalCount)
-                .totalPages(totalPages)
-                .build();
+    public int findPostsCount(BoardCriteria boardCriteria) {
+        return boardRepository.findPostsCount(boardCriteria);
     }
 
     /**
@@ -229,9 +219,18 @@ public class BoardService {
         boardRepository.hitUp(id);
     }
 
-    private void validateCategory(int categoryId, int boardId) {
-        if (!categoryService.isCategoryOf(categoryId, boardId)) {
+    /**
+     * 게시글 도메인 검증
+     *
+     * @param post 검증할 도메인
+     */
+    private void validatePost(Post post) {
+        BoardInfo boardInfo = boardInfoService.findBoardInfoById(post.getBoardId());
+        if (!categoryService.isCategoryOf(post.getCategoryId(), boardInfo.getId())) {
             throw new BizException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 카테고리입니다.");
+        }
+        if (!boardInfo.isAllowSecret() && post.getSecret()) {
+            throw new BizException(ErrorCode.INVALID_INPUT_VALUE, "비밀글을 허용하지 않는 게시판입니다.");
         }
     }
 }

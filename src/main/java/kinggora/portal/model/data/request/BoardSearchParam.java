@@ -2,6 +2,7 @@ package kinggora.portal.model.data.request;
 
 import kinggora.portal.web.validation.DateType;
 import kinggora.portal.web.validation.PeriodType;
+import lombok.Builder;
 import lombok.Getter;
 import org.springframework.util.StringUtils;
 
@@ -13,8 +14,9 @@ import javax.validation.constraints.Positive;
  * - GET 쿼리 파라미터 바인딩
  */
 @Getter
+@Builder
 @PeriodType(previous = "startDate", later = "endDate")
-public class SearchCriteria {
+public class BoardSearchParam {
 
     @Positive
     private final Integer categoryId;
@@ -23,7 +25,6 @@ public class SearchCriteria {
     private final String startDate;
     @DateType
     private final String endDate;
-    private int boardId;
 
     /**
      * 파라미터 주입을 위한 생성자
@@ -34,20 +35,11 @@ public class SearchCriteria {
      * @param startDate  시작 날짜
      * @param endDate    종료 날짜
      */
-    public SearchCriteria(Integer categoryId, String searchWord, String startDate, String endDate) {
+    public BoardSearchParam(Integer categoryId, String searchWord, String startDate, String endDate) {
         this.categoryId = categoryId;
         this.searchWord = StringUtils.hasLength(searchWord) ? searchWord.strip() : searchWord;
         this.startDate = startDate;
         this.endDate = endDate;
-    }
-
-    /**
-     * 컨트롤러 단에서 Path Variable로부터 boardId 초기화
-     *
-     * @param boardId 게시글 id
-     */
-    public void injectBoardId(int boardId) {
-        this.boardId = boardId;
     }
 
 }

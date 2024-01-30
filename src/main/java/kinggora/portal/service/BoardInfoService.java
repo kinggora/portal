@@ -24,7 +24,7 @@ public class BoardInfoService {
      * @return BoardInfo 리스트
      */
     public List<BoardInfo> findBoardInfos() {
-        return boardInfoRepository.findAll();
+        return boardInfoRepository.findBoardInfos();
     }
 
     /**
@@ -36,6 +36,18 @@ public class BoardInfoService {
      */
     public BoardInfo findBoardInfoById(int id) {
         return boardInfoRepository.findById(id)
+                .orElseThrow(() -> new BizException(ErrorCode.BOARD_NOT_FOUND));
+    }
+
+    /**
+     * 게시판 정보 단건 조회
+     *
+     * @param postId 게시글 id
+     * @return 게시판 정보
+     * @throws BizException 게시판이 존재하지 않는 경우 발생
+     */
+    public BoardInfo findByPostId(int postId) {
+        return boardInfoRepository.findByPostId(postId)
                 .orElseThrow(() -> new BizException(ErrorCode.BOARD_NOT_FOUND));
     }
 

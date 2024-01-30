@@ -1,16 +1,15 @@
 package kinggora.portal.web.evaluator;
 
 import kinggora.portal.domain.BoardInfo;
-import kinggora.portal.domain.Post;
 import kinggora.portal.domain.type.AccessLevel;
 import kinggora.portal.domain.type.MemberRole;
 import kinggora.portal.model.data.request.Id;
 import kinggora.portal.service.BoardInfoService;
-import kinggora.portal.service.BoardService;
-import kinggora.portal.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -26,8 +25,6 @@ import java.util.Collection;
 public class AccessPermissionEvaluator {
 
     private final BoardInfoService boardInfoService;
-    private final BoardService boardService;
-    private final SecurityUtil securityUtil;
 
     /**
      * 게시판의 정보를 조회하여 Permission에 대한 권한 확인을 위임
@@ -57,8 +54,7 @@ public class AccessPermissionEvaluator {
             return false;
         }
         Id postId = (Id) targetDomainObject;
-        Post post = boardService.findPostById(postId.getId());
-        BoardInfo boardInfo = boardInfoService.findBoardInfoById(post.getBoardId());
+        BoardInfo boardInfo = boardInfoService.findByPostId(postId.getId());
         return checkPermission(boardInfo, (String) permission);
     }
 
@@ -103,11 +99,12 @@ public class AccessPermissionEvaluator {
         if (AccessLevel.NONE.equals(accessLevel)) {
             return false;
         }
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (AccessLevel.USER.equals(accessLevel)) {
-            return findAuthority(securityUtil.getAuthorities(), MemberRole.USER.getCode());
+            return findAuthority(authentication.getAuthorities(), MemberRole.USER.getCode());
         }
         if (AccessLevel.ADMIN.equals(accessLevel)) {
-            return findAuthority(securityUtil.getAuthorities(), MemberRole.ADMIN.getCode());
+            return findAuthority(authentication.getAuthorities(), MemberRole.ADMIN.getCode());
         }
         return false;
     }

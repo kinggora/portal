@@ -1,12 +1,16 @@
 package kinggora.portal.repository;
 
 import kinggora.portal.domain.Comment;
+import kinggora.portal.domain.Pageable;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.exception.ErrorCode;
 import kinggora.portal.mapper.CommentMapper;
-import kinggora.portal.model.data.response.CommentResponse;
+import kinggora.portal.model.data.request.CommentCriteria;
+import kinggora.portal.model.data.response.MyComment;
+import kinggora.portal.model.data.response.PostComment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -48,13 +52,26 @@ public class CommentRepository {
     }
 
     /**
-     * 게시글에 대한 댓글 조회
-     *
-     * @param postId 게시글 id
-     * @return 댓글 리스트
+     * @param pageable
+     * @param criteria
+     * @return
      */
-    public List<CommentResponse> findByPostId(int postId) {
-        return mapper.findByPostId(postId);
+    public List<MyComment> findMyComments(@Param("pageable") Pageable pageable, @Param("criteria") CommentCriteria criteria) {
+        return mapper.findMyComments(pageable, criteria);
+    }
+
+    public List<PostComment> findPostComments(@Param("pageable") Pageable pageable, @Param("criteria") CommentCriteria criteria) {
+        return mapper.findPostComments(pageable, criteria);
+    }
+
+    /**
+     * 필터링 조건에 대한 댓글 수 조회
+     *
+     * @param criteria 필터링 조건
+     * @return 댓글 수
+     */
+    public int findCommentsCount(CommentCriteria criteria) {
+        return mapper.findCommentsCount(criteria);
     }
 
     /**

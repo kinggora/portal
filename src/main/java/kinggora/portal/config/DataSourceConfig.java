@@ -8,6 +8,9 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
 
+/**
+ * 데이터소스 설정
+ */
 @Configuration
 @PropertySource("classpath:/application-db.properties")
 public class DataSourceConfig {

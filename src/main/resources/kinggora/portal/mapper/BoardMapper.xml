@@ -98,8 +98,7 @@
         SELECT *
         FROM boards b
         JOIN file f
-        ON b.id=f.post_id
-        WHERE f.id=#{fileId}
+        WHERE b.id=f.post_id AND f.id=#{fileId} AND b.deleted=false
     </select>
 
     <update id="update" parameterType="Post">
@@ -171,9 +170,12 @@
         thumb_url
         , (SELECT COUNT(id) FROM comment cm WHERE b.id=cm.post_id) AS comment_count
         FROM boards b, member m, category c
-        WHERE b.member_id=m.id and b.category_id=c.id AND b.deleted=false
+        WHERE b.member_id=m.id and b.category_id=c.id AND b.deleted=false AND b.parent IS NULL
         <if test="criteria.boardId != null">
             AND b.board_id=#{criteria.boardId}
+        </if>
+        <if test="criteria.memberId != null">
+            AND b.member_id=#{criteria.memberId}
         </if>
         <if test="criteria.categoryId != null">
             AND b.category_id=#{criteria.categoryId}
@@ -220,6 +222,9 @@
         <if test="criteria.boardId != null">
             AND b.board_id=#{criteria.boardId}
         </if>
+        <if test="criteria.memberId != null">
+            AND b.member_id=#{criteria.memberId}
+        </if>
         <if test="criteria.categoryId != null">
             AND b.category_id=#{criteria.categoryId}
         </if>
@@ -247,12 +252,15 @@
         LIMIT #{pageable.offset},#{pageable.limit}
     </select>
 
-    <select id="findPostsCount" parameterType="SearchCriteria" resultType="int">
+    <select id="findPostsCount" parameterType="BoardCriteria" resultType="int">
         SELECT COUNT(id)
         FROM boards
         WHERE deleted=false AND parent IS NULL
         <if test="boardId != null">
             AND board_id=#{boardId}
+        </if>
+        <if test="memberId != null">
+            AND member_id=#{memberId}
         </if>
         <if test="categoryId != null">
             AND category_id=#{categoryId}

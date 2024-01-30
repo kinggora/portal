@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kinggora.portal.mapper.CommentMapper">
-    <resultMap id="CommentResponse" type="CommentResponse">
+    <resultMap id="PostComment" type="PostComment">
         <id property="id" column="id"/>
         <result property="postId" column="post_id"/>
         <result property="content" column="content"/>
@@ -48,7 +48,20 @@
         WHERE id=#{id}
     </select>
 
-    <select id="findByPostId" parameterType="map" resultMap="CommentResponse">
+    <select id="findMyComments" parameterType="map" resultType="MyComment">
+        SELECT
+        c.id
+        , c.post_id
+        , c.content
+        , c.reg_date
+        , b.title AS postTitle
+        FROM comment c JOIN boards b
+        WHERE c.post_id=b.id AND c.member_id=#{criteria.memberId} AND c.deleted=#{criteria.deleted}
+        ORDER BY reg_date
+        LIMIT #{pageable.offset},#{pageable.limit}
+    </select>
+
+    <select id="findPostComments" parameterType="map" resultMap="PostComment">
         SELECT
         c.id
         , c.post_id
@@ -61,8 +74,24 @@
         , m.name AS m_name
         , m.roles AS m_roles
         FROM comment c JOIN member m
-        WHERE c.post_id=#{postId} AND c.member_id=m.id
+        WHERE c.member_id=m.id AND c.post_id=#{criteria.postId}
         ORDER BY ref, ref_order
+        LIMIT #{pageable.offset},#{pageable.limit}
+    </select>
+
+    <select id="findCommentsCount" parameterType="CommentCriteria" resultType="int">
+        SELECT COUNT(id)
+        FROM comment
+        WHERE 1=1
+        <if test="postId != null">
+            AND post_id=#{postId}
+        </if>
+        <if test="memberId != null">
+            AND member_id=#{memberId}
+        </if>
+        <if test="deleted != null">
+            AND deleted=#{deleted}
+        </if>
     </select>
 
     <update id="update" parameterType="Comment">

@@ -8,7 +8,14 @@
         SELECT * FROM board_info WHERE id=#{id}
     </select>
 
-    <select id="findAll" resultType="BoardInfo">
+    <select id="findByPostId" parameterType="int" resultType="BoardInfo">
+        SELECT *
+        FROM board_info bi
+        JOIN boards b
+        WHERE bi.id=b.board_id AND b.id=#{postId} AND b.deleted=false
+    </select>
+
+    <select id="findBoardInfos" resultType="BoardInfo">
         SELECT * FROM board_info
     </select>
 

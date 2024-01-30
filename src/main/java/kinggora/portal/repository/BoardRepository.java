@@ -5,7 +5,7 @@ import kinggora.portal.domain.Post;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.exception.ErrorCode;
 import kinggora.portal.mapper.BoardMapper;
-import kinggora.portal.model.data.request.SearchCriteria;
+import kinggora.portal.model.data.request.BoardCriteria;
 import kinggora.portal.model.data.response.BoardDetail;
 import kinggora.portal.model.data.response.CommonBoardItem;
 import kinggora.portal.model.data.response.QnaBoardItem;
@@ -99,23 +99,23 @@ public class BoardRepository {
     /**
      * 검색 조건에 해당하는 CommonBoardItem 조회 + 페이징 처리
      *
-     * @param pageable       페이징 조건
-     * @param searchCriteria 검색 조건
+     * @param pageable 페이징 조건
+     * @param criteria 검색 조건
      * @return 게시글 리스트
      */
-    public List<CommonBoardItem> findCommonBoardItems(Pageable pageable, SearchCriteria searchCriteria) {
-        return mapper.findCommonBoardItems(pageable, searchCriteria);
+    public List<CommonBoardItem> findCommonBoardItems(Pageable pageable, BoardCriteria criteria) {
+        return mapper.findCommonBoardItems(pageable, criteria);
     }
 
     /**
      * 검색 조건에 해당하는 QnaBoardItem 조회 + 페이징 처리
      *
-     * @param pageable       페이징 조건
-     * @param searchCriteria 검색 조건
+     * @param pageable 페이징 조건
+     * @param criteria 검색 조건
      * @return 게시글 리스트
      */
-    public List<QnaBoardItem> findQnaBoardItems(Pageable pageable, SearchCriteria searchCriteria) {
-        return mapper.findQnaBoardItems(pageable, searchCriteria);
+    public List<QnaBoardItem> findQnaBoardItems(Pageable pageable, BoardCriteria criteria) {
+        return mapper.findQnaBoardItems(pageable, criteria);
     }
 
     /**
@@ -124,7 +124,7 @@ public class BoardRepository {
      * @param criteria 검색 조건
      * @return 게시글 개수
      */
-    public int findPostsCount(SearchCriteria criteria) {
+    public int findPostsCount(BoardCriteria criteria) {
         return mapper.findPostsCount(criteria);
     }
 
@@ -141,11 +141,11 @@ public class BoardRepository {
     /**
      * 자식 게시글 존재 여부 조회
      *
-     * @param parentId 부모 id
+     * @param id 게시글 id
      * @return 자식 존재 여부
      */
-    public boolean hasChild(int parentId) {
-        return mapper.hasChild(parentId);
+    public boolean hasChild(int id) {
+        return mapper.hasChild(id);
     }
 
     /**

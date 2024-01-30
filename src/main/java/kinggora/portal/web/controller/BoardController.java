@@ -73,10 +73,10 @@ public class BoardController {
      * - boardType == "Q" : QnaBoardItem
      * - boardType == "L"(default) or else : CommonBoardItem
      *
-     * @param boardId        게시판 id
-     * @param boardType      반환할 BoardItem 종류
-     * @param pagingCriteria 페이징 조건
-     * @param searchCriteria 필터링 조건
+     * @param boardId          게시판 id
+     * @param boardType        반환할 BoardItem 종류
+     * @param pagingCriteria   페이징 조건
+     * @param boardSearchParam 필터링 조건
      * @return 게시글 목록 리스트 & 페이징 정보 API Response
      */
     @PreAuthorize("@accessPermissionEvaluator.hasPermissionToBoard(#boardId, 'LIST')")
@@ -84,29 +84,50 @@ public class BoardController {
     public PagingResponse<? extends BoardItem> getPosts(@PathVariable Id boardId,
                                                         @RequestParam(defaultValue = "L") String boardType,
                                                         @ModelAttribute @Valid PagingCriteria pagingCriteria,
-                                                        @ModelAttribute @Valid SearchCriteria searchCriteria) {
-        searchCriteria.injectBoardId(boardId.getId());
-        List<? extends BoardItem> boardItems = boardService.findBoardItems(boardType, pagingCriteria, searchCriteria);
-        PageInfo pageInfo = boardService.getPageInfo(pagingCriteria, searchCriteria);
+                                                        @ModelAttribute @Valid BoardSearchParam boardSearchParam) {
+        BoardCriteria boardCriteria = BoardCriteria.builder()
+                .boardSearchParam(boardSearchParam)
+                .boardId(boardId.getId())
+                .build();
+        List<? extends BoardItem> boardItems = boardService.findBoardItems(boardType, pagingCriteria, boardCriteria);
+        PageInfo pageInfo = getBoardPageInfo(pagingCriteria, boardCriteria);
         return new PagingResponse<>(boardItems, pageInfo);
     }
 
     /**
      * 조회수(hit)로 내림차 정렬한 게시글 목록 리스트 + 페이징 정보 조회 요청 처리
      *
-     * @param pagingCriteria 페이징 조건
-     * @param searchCriteria 필터링 조건
+     * @param pagingCriteria   페이징 조건
+     * @param boardSearchParam 필터링 조건
      * @return 게시글 목록 리스트 & 페이징 정보 API Response
      */
     @GetMapping("/boards/hit/posts")
-    public PagingResponse<? extends BoardItem> getHitPosts(@ModelAttribute @Valid PagingCriteria pagingCriteria,
-                                                           @ModelAttribute @Valid SearchCriteria searchCriteria) {
-        List<CommonBoardItem> hitBoardItems = boardService.findHitBoardItems(pagingCriteria, searchCriteria);
-        PageInfo pageInfo = boardService.getPageInfo(pagingCriteria, searchCriteria);
-        return PagingResponse.<CommonBoardItem>builder()
-                .data(hitBoardItems)
-                .pageInfo(pageInfo)
+    public PagingResponse<CommonBoardItem> getHitPosts(@ModelAttribute @Valid PagingCriteria pagingCriteria,
+                                                       @ModelAttribute @Valid BoardSearchParam boardSearchParam) {
+        BoardCriteria boardCriteria = BoardCriteria.builder()
+                .boardSearchParam(boardSearchParam)
                 .build();
+        List<CommonBoardItem> hitBoardItems = boardService.findHitBoardItems(pagingCriteria, boardCriteria);
+        PageInfo pageInfo = getBoardPageInfo(pagingCriteria, boardCriteria);
+        return new PagingResponse<>(hitBoardItems, pageInfo);
+    }
+
+    /**
+     * 로그인한 회원이 작성한 게시글 목록 리스트 + 페이징 정보 조회 요청 처리
+     *
+     * @param pagingCriteria 페이징 조건
+     * @param userDetails    인증 정보
+     * @return 게시글 목록 리스트 & 페이징 정보 API Response
+     */
+    @GetMapping("/boards/my/posts")
+    public PagingResponse<CommonBoardItem> getMyPosts(@ModelAttribute @Valid PagingCriteria pagingCriteria,
+                                                      @AuthenticationPrincipal CustomUserDetails userDetails) {
+        BoardCriteria boardCriteria = BoardCriteria.builder()
+                .memberId(userDetails.getId())
+                .build();
+        List<CommonBoardItem> myBoardItems = boardService.findCommonBoardItems(pagingCriteria, boardCriteria);
+        PageInfo pageInfo = getBoardPageInfo(pagingCriteria, boardCriteria);
+        return new PagingResponse<>(myBoardItems, pageInfo);
     }
 
     /**
@@ -247,9 +268,33 @@ public class BoardController {
      */
     @PreAuthorize("@accessPermissionEvaluator.hasPermissionToPost(#postId, 'READ')")
     @GetMapping("/posts/{postId}/comments")
-    public DataResponse<List<CommentResponse>> getComments(@PathVariable Id postId) {
-        List<CommentResponse> comments = commentService.findComments(postId.getId());
-        return DataResponse.of(comments);
+    public PagingResponse<PostComment> getComments(@ModelAttribute @Valid PagingCriteria pagingCriteria,
+                                                   @PathVariable Id postId) {
+        CommentCriteria commentCriteria = CommentCriteria.builder()
+                .postId(postId.getId())
+                .build();
+        List<PostComment> comments = commentService.findPostComments(pagingCriteria, commentCriteria);
+        PageInfo pageInfo = getCommentPageInfo(pagingCriteria, commentCriteria);
+        return new PagingResponse<>(comments, pageInfo);
+    }
+
+    /**
+     * 로그인한 회원이 작성한 댓글 목록 리스트 + 페이징 정보 조회 요청 처리
+     *
+     * @param pagingCriteria 페이징 조건
+     * @param userDetails    인증 정보
+     * @return 댓글 목록 리스트 & 페이징 정보 API Response
+     */
+    @GetMapping("/comments/my")
+    public PagingResponse<MyComment> getMyComments(@ModelAttribute @Valid PagingCriteria pagingCriteria,
+                                                   @AuthenticationPrincipal CustomUserDetails userDetails) {
+        CommentCriteria commentCriteria = CommentCriteria.builder()
+                .memberId(userDetails.getId())
+                .deleted(false)
+                .build();
+        List<MyComment> comments = commentService.findMyComments(pagingCriteria, commentCriteria);
+        PageInfo pageInfo = getCommentPageInfo(pagingCriteria, commentCriteria);
+        return new PagingResponse<>(comments, pageInfo);
     }
 
     /**
@@ -265,8 +310,7 @@ public class BoardController {
     public DataResponse<Integer> createComment(@PathVariable Id postId,
                                                @Valid CommentDto dto,
                                                @AuthenticationPrincipal CustomUserDetails userDetails) {
-        dto.injectIds(postId.getId(), userDetails.getId());
-        int id = commentService.saveRootComment(dto);
+        int id = commentService.saveRootComment(postId.getId(), userDetails.getId(), dto);
         return DataResponse.of(id);
     }
 
@@ -285,8 +329,7 @@ public class BoardController {
                                                     @PathVariable Id commentId,
                                                     @Valid CommentDto dto,
                                                     @AuthenticationPrincipal CustomUserDetails userDetails) {
-        dto.injectIds(postId.getId(), userDetails.getId());
-        int id = commentService.saveChildComment(commentId.getId(), dto);
+        int id = commentService.saveChildComment(commentId.getId(), userDetails.getId(), dto);
         return DataResponse.of(id);
     }
 
@@ -317,4 +360,27 @@ public class BoardController {
         return DataResponse.empty();
     }
 
+    /**
+     * 게시판 페이징 정보 객체를 생성
+     *
+     * @param pagingCriteria 페이징 정보
+     * @param boardCriteria  필터링 정보
+     * @return PageInfo
+     */
+    private PageInfo getBoardPageInfo(PagingCriteria pagingCriteria, BoardCriteria boardCriteria) {
+        int totalCount = boardService.findPostsCount(boardCriteria);
+        return PageInfo.create(totalCount, pagingCriteria.getPage(), pagingCriteria.getSize());
+    }
+
+    /**
+     * 댓글 페이징 정보 객체를 생성
+     *
+     * @param pagingCriteria  페이징 정보
+     * @param commentCriteria 필터링 정보
+     * @return PageInfo
+     */
+    private PageInfo getCommentPageInfo(PagingCriteria pagingCriteria, CommentCriteria commentCriteria) {
+        int totalCount = commentService.findCommentsCount(commentCriteria);
+        return PageInfo.create(totalCount, pagingCriteria.getPage(), pagingCriteria.getSize());
+    }
 }

@@ -33,7 +33,17 @@ public class BoardInfoRepository {
      *
      * @return 모든 게시판 정보
      */
-    public List<BoardInfo> findAll() {
-        return mapper.findAll();
+    public List<BoardInfo> findBoardInfos() {
+        return mapper.findBoardInfos();
+    }
+
+    /**
+     * 게시글이 등록된 게시판 조회
+     *
+     * @param postId 게시글 id
+     * @return 게시판 정보
+     */
+    public Optional<BoardInfo> findByPostId(int postId) {
+        return mapper.findByPostId(postId);
     }
 }

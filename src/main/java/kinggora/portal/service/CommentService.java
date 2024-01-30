@@ -1,10 +1,14 @@
 package kinggora.portal.service;
 
 import kinggora.portal.domain.Comment;
+import kinggora.portal.domain.Pageable;
 import kinggora.portal.exception.BizException;
 import kinggora.portal.exception.ErrorCode;
+import kinggora.portal.model.data.request.CommentCriteria;
 import kinggora.portal.model.data.request.CommentDto;
-import kinggora.portal.model.data.response.CommentResponse;
+import kinggora.portal.model.data.request.PagingCriteria;
+import kinggora.portal.model.data.response.MyComment;
+import kinggora.portal.model.data.response.PostComment;
 import kinggora.portal.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,9 +37,9 @@ public class CommentService {
      * @param dto 사용자 입력 데이터
      * @return 댓글 id
      */
-    public int saveRootComment(CommentDto dto) {
+    public int saveRootComment(int postId, int memberId, CommentDto dto) {
         int ref = commentRepository.getMaxRef() + 1;
-        Comment comment = dto.toRootComment(ref);
+        Comment comment = dto.toRootComment(postId, memberId, ref);
         return commentRepository.save(comment);
     }
 
@@ -48,15 +52,13 @@ public class CommentService {
      * @param dto      사용자 입력 데이터
      * @return 댓글 id
      */
-    public int saveChildComment(int parentId, CommentDto dto) {
+    public int saveChildComment(int parentId, int memberId, CommentDto dto) {
         Comment parent = findCommentById(parentId);
-        if (parent.isDeleted()) {
-            throw new BizException(ErrorCode.ALREADY_DELETED_COMMENT);
-        } else if (parent.getDepth() == MAXIMUM_DEPTH) {
+        if (parent.getDepth() == MAXIMUM_DEPTH) {
             throw new BizException(ErrorCode.OVER_MAXIMUM_COMMENT_DEPTH);
         }
         int refOrder = findRefOrder(parent);
-        Comment comment = dto.toChildComment(refOrder, parent);
+        Comment comment = dto.toChildComment(memberId, refOrder, parent);
         return commentRepository.save(comment);
     }
 
@@ -87,13 +89,37 @@ public class CommentService {
     }
 
     /**
-     * 게시글에 대한 댓글 조회
+     * MyComment 목록 조회
      *
-     * @param postId 게시글 id
-     * @return 댓글 리스트
+     * @param pagingCriteria  페이징 조건
+     * @param commentCriteria 검색 조건
+     * @return MyComment 리스트
      */
-    public List<CommentResponse> findComments(int postId) {
-        return commentRepository.findByPostId(postId);
+    public List<MyComment> findMyComments(PagingCriteria pagingCriteria, CommentCriteria commentCriteria) {
+        Pageable pageable = new Pageable(pagingCriteria.getPage(), pagingCriteria.getSize());
+        return commentRepository.findMyComments(pageable, commentCriteria);
+    }
+
+    /**
+     * PostComment 목록 조회
+     *
+     * @param pagingCriteria  페이징 조건
+     * @param commentCriteria 검색 조건
+     * @return PostComment 리스트
+     */
+    public List<PostComment> findPostComments(PagingCriteria pagingCriteria, CommentCriteria commentCriteria) {
+        Pageable pageable = new Pageable(pagingCriteria.getPage(), pagingCriteria.getSize());
+        return commentRepository.findPostComments(pageable, commentCriteria);
+    }
+
+    /**
+     * 필터링 조건에 대한 댓글 수 조회
+     *
+     * @param commentCriteria 필터링 조건
+     * @return 댓글 수
+     */
+    public int findCommentsCount(CommentCriteria commentCriteria) {
+        return commentRepository.findCommentsCount(commentCriteria);
     }
 
     /**

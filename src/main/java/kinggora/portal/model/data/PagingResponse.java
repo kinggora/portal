@@ -2,7 +2,6 @@ package kinggora.portal.model.data;
 
 import kinggora.portal.model.ApiResponse;
 import kinggora.portal.model.data.response.PageInfo;
-import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
@@ -14,7 +13,6 @@ import java.util.List;
  * @param <T> data 타입
  */
 @Getter
-@Builder
 public class PagingResponse<T> extends ApiResponse {
     private final List<T> data;
     private final PageInfo pageInfo;

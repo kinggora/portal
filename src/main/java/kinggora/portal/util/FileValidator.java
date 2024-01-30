@@ -92,8 +92,8 @@ public class FileValidator {
      * 3. size > 0 체크
      * 4. 원본 파일이름 null 체크
      *
-     * @param file
-     * @return
+     * @param file 파일 폼 데이터
+     * @return 유효한 파일인지 여부
      */
     private boolean isValidFile(MultipartFile file) {
         return file != null && !file.isEmpty() && file.getSize() > 0 && file.getOriginalFilename() != null;
