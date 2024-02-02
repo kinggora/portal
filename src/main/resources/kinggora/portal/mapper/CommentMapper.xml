@@ -57,7 +57,7 @@
         , b.title AS postTitle
         FROM comment c JOIN boards b
         WHERE c.post_id=b.id AND c.member_id=#{criteria.memberId} AND c.deleted=#{criteria.deleted}
-        ORDER BY reg_date
+        ORDER BY reg_date DESC
         LIMIT #{pageable.offset},#{pageable.limit}
     </select>
 

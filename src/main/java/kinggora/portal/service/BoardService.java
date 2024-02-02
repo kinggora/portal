@@ -31,7 +31,8 @@ public class BoardService {
     private final CategoryService categoryService;
 
     /**
-     * 게시글 저장
+     * 루트 게시글 저장
+     * parent = null
      *
      * @param boardId  게시판 id
      * @param memberId 작성자 id
@@ -46,13 +47,18 @@ public class BoardService {
 
     /**
      * 자식 게시글 저장
+     * parent != null
      *
      * @param parentId 부모 게시글 id
      * @param memberId 작성자 id
      * @param dto      사용자 입력 데이터
      * @return 저장 게시글 id
+     * @throws BizException 부모에게 이미 자식 게시글이 존재하는 경우 발생
      */
     public int saveChildPost(int parentId, int memberId, PostDto dto) {
+        if (boardRepository.hasChild(parentId)) {
+            throw new BizException(ErrorCode.ANSWER_ALREADY_EXISTS);
+        }
         Post parent = findPostById(parentId);
         Post childPost = dto.toChildPost(parent, memberId);
         validatePost(childPost);
@@ -62,11 +68,11 @@ public class BoardService {
     /**
      * 게시글 수정
      *
-     * @param postId 수정할 게시글 id
-     * @param dto    수정할 데이터
+     * @param post 수정할 원 게시글 객체
+     * @param dto  수정할 데이터
      */
-    public void updatePost(int postId, PostDto dto) {
-        Post updatePost = dto.toUpdatePost(postId);
+    public void updatePost(Post post, PostDto dto) {
+        Post updatePost = dto.toUpdatePost(post);
         validatePost(updatePost);
         boardRepository.update(updatePost);
     }
@@ -211,12 +217,12 @@ public class BoardService {
     }
 
     /**
-     * 게시글 조회수 1 증가
+     * reader가 작성자가 아닌 게시글에 대하여 조회수 1 증가
      *
      * @param id 게시글 id
      */
-    public void hitUp(int id) {
-        boardRepository.hitUp(id);
+    public void hitUp(int id, Integer readerId) {
+        boardRepository.hitUp(id, readerId);
     }
 
     /**

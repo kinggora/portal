@@ -282,14 +282,6 @@
         </choose>
     </select>
 
-    <select id="existsById" parameterType="int" resultType="boolean">
-        SELECT EXISTS (
-        SELECT id
-        FROM boards
-        WHERE id=#{id} AND deleted=false
-        )
-    </select>
-
     <select id="hasChild" parameterType="int" resultType="boolean">
         SELECT EXISTS (
         SELECT id
@@ -306,7 +298,11 @@
         LIMIT 1
     </select>
 
-    <update id="hitUp" parameterType="int">
-        UPDATE boards SET hit=hit+1 WHERE id=#{id}
+    <update id="hitUp" parameterType="map">
+        UPDATE boards SET hit=hit+1
+        WHERE id=#{id} AND deleted=false
+        <if test="readerId != null">
+            AND member_id!=#{readerId}
+        </if>
     </update>
 </mapper>

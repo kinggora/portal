@@ -103,4 +103,10 @@ public class CustomUserDetails implements UserDetails {
     public Integer getId() {
         return getMember().getId();
     }
+
+    public boolean isAdmin() {
+        return getAuthorities().stream()
+                .anyMatch(authority ->
+                        MemberRole.ADMIN.getCode().equals(authority.getAuthority()));
+    }
 }

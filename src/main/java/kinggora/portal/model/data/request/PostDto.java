@@ -85,12 +85,13 @@ public class PostDto {
      * 게시글 수정시 DTO -> 도메인 변환
      * 수정 날짜(modDate) 초기화
      *
-     * @param id 수정할 게시글 id
-     * @return 수정할 도메인 객체
+     * @param post 원 게시글 객체
+     * @return 수정 데이터를 포함한 도메인 객체
      */
-    public Post toUpdatePost(int id) {
+    public Post toUpdatePost(Post post) {
         return Post.builder()
-                .id(id)
+                .id(post.getId())
+                .boardId(post.getBoardId())
                 .categoryId(categoryId)
                 .title(title)
                 .content(content)

@@ -72,12 +72,12 @@ public class CommentDto {
     /**
      * 댓글 수정시 DTO -> 도메인 변환
      *
-     * @param id 수정할 댓글 id
+     * @param comment 수정할 댓글
      * @return 수정할 댓글 도메인
      */
-    public Comment toUpdateComment(int id) {
+    public Comment toUpdateComment(Comment comment) {
         return Comment.builder()
-                .id(id)
+                .id(comment.getId())
                 .content(content)
                 .build();
     }

@@ -31,15 +31,13 @@ public interface BoardMapper {
 
     Optional<BoardDetail> findBoardDetail(int id);
 
-    int hitUp(int id);
+    void hitUp(@Param("id") int id, @Param("readerId") Integer readerId);
 
     List<CommonBoardItem> findCommonBoardItems(@Param("pageable") Pageable pageable, @Param("criteria") BoardCriteria criteria);
 
     List<QnaBoardItem> findQnaBoardItems(@Param("pageable") Pageable pageable, @Param("criteria") BoardCriteria criteria);
 
     int findPostsCount(BoardCriteria criteria);
-
-    boolean existsById(int id);
 
     boolean hasChild(int parentId);
 

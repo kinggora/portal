@@ -1,8 +1,8 @@
 package kinggora.portal.web.controller;
 
-import kinggora.portal.domain.BoardInfo;
-import kinggora.portal.domain.Category;
-import kinggora.portal.domain.UploadFile;
+import kinggora.portal.domain.*;
+import kinggora.portal.exception.BizException;
+import kinggora.portal.exception.ErrorCode;
 import kinggora.portal.model.data.DataResponse;
 import kinggora.portal.model.data.PagingResponse;
 import kinggora.portal.model.data.request.*;
@@ -132,14 +132,18 @@ public class BoardController {
 
     /**
      * 단일 게시글 상세 조회 요청 처리
+     * 클라이언트가 조회할 게시글의 작성자가 아니라면 조회수 증가
      *
-     * @param postId 게시글 id
+     * @param postId      게시글 id
+     * @param userDetails 인증 객체
      * @return 게시글 상세 API Response
      */
     @PreAuthorize("@accessPermissionEvaluator.hasPermissionToPost(#postId, 'READ')")
     @GetMapping("/posts/{postId}")
-    public DataResponse<BoardDetail> getPost(@PathVariable Id postId) {
-        boardService.hitUp(postId.getId());
+    public DataResponse<BoardDetail> getPost(@PathVariable Id postId,
+                                             @AuthenticationPrincipal CustomUserDetails userDetails) {
+        boardService.hitUp(postId.getId(),
+                (userDetails == null) ? null : userDetails.getId());
         BoardDetail boardDetail = boardService.findBoardDetail(postId.getId());
         return DataResponse.of(boardDetail);
     }
@@ -194,14 +198,19 @@ public class BoardController {
     /**
      * 게시글 수정 요청 처리
      *
-     * @param postId 수정할 게시글 id
-     * @param dto    게시글 수정 데이터
+     * @param postId      수정할 게시글 id
+     * @param dto         게시글 수정 데이터
+     * @param userDetails 인증 객체
      * @return Empty API Response
      */
-    @PreAuthorize("@ownerPermissionEvaluator.hasPermissionToPost(#postId)")
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/posts/{postId}")
-    public DataResponse<Void> updatePost(@PathVariable Id postId, @Valid PostDto dto) {
-        boardService.updatePost(postId.getId(), dto);
+    public DataResponse<Void> updatePost(@PathVariable Id postId,
+                                         @Valid PostDto dto,
+                                         @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Post post = boardService.findPostById(postId.getId());
+        authorization(userDetails, post.getMemberId());
+        boardService.updatePost(post, dto);
         return DataResponse.empty();
     }
 
@@ -209,14 +218,18 @@ public class BoardController {
      * 게시글 삭제 요청 처리
      * 게시글, 첨부 파일 삭제
      *
-     * @param postId 삭제할 게시글 id
+     * @param postId      삭제할 게시글 id
+     * @param userDetails 인증 객체
      * @return Empty API Response
      */
-    @PreAuthorize("@ownerPermissionEvaluator.hasPermissionToPost(#postId)")
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/posts/{postId}")
-    public DataResponse<Void> deletePost(@PathVariable Id postId) {
-        boardService.deletePostById(postId.getId());
-        fileService.deleteFilesByPostId(postId.getId());
+    public DataResponse<Void> deletePost(@PathVariable Id postId,
+                                         @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Post post = boardService.findPostById(postId.getId());
+        authorization(userDetails, post.getMemberId());
+        boardService.deletePostById(post.getId());
+        fileService.deleteFilesByPostId(post.getId());
         return DataResponse.empty();
     }
 
@@ -236,13 +249,18 @@ public class BoardController {
     /**
      * 게시글 첨부파일 저장 요청 처리
      *
-     * @param postId 게시글 id
-     * @param dto    파일 저장 데이터 (Multipart File)
+     * @param postId      게시글 id
+     * @param dto         파일 저장 데이터 (Multipart File)
+     * @param userDetails 인증 객체
      * @return Empty API Response
      */
-    @PreAuthorize("@ownerPermissionEvaluator.hasPermissionToPost(#postId)")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping(value = "/posts/{postId}/files", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public DataResponse<Void> saveFiles(@PathVariable Id postId, FileDto dto) {
+    public DataResponse<Void> saveFiles(@PathVariable Id postId,
+                                        FileDto dto,
+                                        @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Post post = boardService.findPostById(postId.getId());
+        authorization(userDetails, post.getMemberId());
         fileService.saveFiles(postId.getId(), dto);
         return DataResponse.empty();
     }
@@ -250,12 +268,16 @@ public class BoardController {
     /**
      * 파일 삭제 요청 처리
      *
-     * @param fileId 삭제할 파일 id
+     * @param fileId      삭제할 파일 id
+     * @param userDetails 인증 객체
      * @return Empty API Response
      */
-    @PreAuthorize("@ownerPermissionEvaluator.hasPermissionToFile(#fileId)")
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/files/{fileId}")
-    public DataResponse<Void> deleteFile(@PathVariable Id fileId) {
+    public DataResponse<Void> deleteFile(@PathVariable Id fileId,
+                                         @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Post post = boardService.findByFileId(fileId.getId());
+        authorization(userDetails, post.getMemberId());
         fileService.deleteFile(fileId.getId());
         return DataResponse.empty();
     }
@@ -336,27 +358,36 @@ public class BoardController {
     /**
      * 댓글 수정 요청 처리
      *
-     * @param commentId 수정할 댓글 id
-     * @param dto       댓글 수정 데이터
+     * @param commentId   수정할 댓글 id
+     * @param dto         댓글 수정 데이터
+     * @param userDetails 인증 객체
      * @return Empty API Response
      */
-    @PreAuthorize("@ownerPermissionEvaluator.hasPermissionToComment(#commentId)")
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/comments/{commentId}")
-    public DataResponse<Void> updateComment(@PathVariable Id commentId, @Valid CommentDto dto) {
-        commentService.updateComment(commentId.getId(), dto);
+    public DataResponse<Void> updateComment(@PathVariable Id commentId,
+                                            @Valid CommentDto dto,
+                                            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Comment comment = commentService.findCommentById(commentId.getId());
+        authorization(userDetails, comment.getMemberId());
+        commentService.updateComment(comment, dto);
         return DataResponse.empty();
     }
 
     /**
      * 댓글 삭제 요청 처리
      *
-     * @param commentId 삭제할 댓글 id
+     * @param commentId   삭제할 댓글 id
+     * @param userDetails 인증 객체
      * @return Empty API Response
      */
-    @PreAuthorize("@ownerPermissionEvaluator.hasPermissionToComment(#commentId)")
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/comments/{commentId}")
-    public DataResponse<Void> deleteComment(@PathVariable Id commentId) {
-        commentService.deleteComment(commentId.getId());
+    public DataResponse<Void> deleteComment(@PathVariable Id commentId,
+                                            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Comment comment = commentService.findCommentById(commentId.getId());
+        authorization(userDetails, comment.getMemberId());
+        commentService.deleteComment(comment);
         return DataResponse.empty();
     }
 
@@ -382,5 +413,19 @@ public class BoardController {
     private PageInfo getCommentPageInfo(PagingCriteria pagingCriteria, CommentCriteria commentCriteria) {
         int totalCount = commentService.findCommentsCount(commentCriteria);
         return PageInfo.create(totalCount, pagingCriteria.getPage(), pagingCriteria.getSize());
+    }
+
+    /**
+     * 리소스에 대한 권한 인가
+     * 인증 회원이 작성자나 관리자 권한을 가지고 있는지 확인
+     *
+     * @param userDetails 인증 객체
+     * @param writerId    작성자 id
+     * @throws BizException 인증 회원이 작성자나 관리자 권한이 없는 경우 발생
+     */
+    private void authorization(CustomUserDetails userDetails, Integer writerId) {
+        if (userDetails == null || !userDetails.getId().equals(writerId) || !userDetails.isAdmin()) {
+            throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
     }
 }

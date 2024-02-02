@@ -34,7 +34,9 @@ public class CommentService {
      * 댓글 저장 (RootComment)
      * ref : 기존에 존재하는 ref의 최댓값 + 1
      *
-     * @param dto 사용자 입력 데이터
+     * @param postId   게시글 id
+     * @param memberId 작성자 id
+     * @param dto      사용자 입력 데이터
      * @return 댓글 id
      */
     public int saveRootComment(int postId, int memberId, CommentDto dto) {
@@ -49,6 +51,7 @@ public class CommentService {
      * 부모 댓글 기반으로 도메인 생성
      *
      * @param parentId 부모 id
+     * @param memberId 작성자 id
      * @param dto      사용자 입력 데이터
      * @return 댓글 id
      */
@@ -81,11 +84,11 @@ public class CommentService {
     /**
      * 댓글 수정
      *
-     * @param id  수정할 댓글 id
-     * @param dto 수정 데이터
+     * @param comment 수정할 댓글
+     * @param dto     수정 데이터
      */
-    public void updateComment(int id, CommentDto dto) {
-        commentRepository.update(dto.toUpdateComment(id));
+    public void updateComment(Comment comment, CommentDto dto) {
+        commentRepository.update(dto.toUpdateComment(comment));
     }
 
     /**
@@ -126,12 +129,11 @@ public class CommentService {
      * 댓글 삭제
      * 삭제 대상이 자식이 있으면 숨김 처리, 없으면 조상에서 함께 삭제할 댓글 탐색
      *
-     * @param id 삭제할 댓글 id
+     * @param comment 삭제할 댓글
      */
-    public void deleteComment(int id) {
-        Comment comment = findCommentById(id);
-        if (commentRepository.hasChild(id)) {
-            commentRepository.hideById(id);
+    public void deleteComment(Comment comment) {
+        if (commentRepository.hasChild(comment.getId())) {
+            commentRepository.hideById(comment.getId());
         } else {
             deleteAncestorComment(comment);
         }

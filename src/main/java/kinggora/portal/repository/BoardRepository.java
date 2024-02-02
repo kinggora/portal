@@ -129,16 +129,6 @@ public class BoardRepository {
     }
 
     /**
-     * 게시글 존재 여부 조회
-     *
-     * @param id 게시글 id
-     * @return 게시글 존재 여부
-     */
-    public boolean existsById(int id) {
-        return mapper.existsById(id);
-    }
-
-    /**
      * 자식 게시글 존재 여부 조회
      *
      * @param id 게시글 id
@@ -165,11 +155,8 @@ public class BoardRepository {
      *
      * @param id 게시글 id
      */
-    public void hitUp(int id) {
-        if (mapper.hitUp(id) == 0) {
-            log.error("fail BoardRepository.hitUp");
-            throw new BizException(ErrorCode.DB_ERROR, "게시글 조회수 증가 실패");
-        }
+    public void hitUp(int id, Integer readerId) {
+        mapper.hitUp(id, readerId);
     }
 
 }
