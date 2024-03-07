@@ -6,7 +6,7 @@ Spring Boot API + Vue.Js SPA
 - **IDE**: IntelliJ IDEA 2022.3.2 (Ultimate)
 - **Framework**: SpringBoot(2.x), Vue.js 3
 - **Database**: MariaDB
-- **ORM**: MyBatis
+- **SQL Mapper**: MyBatis
 - **Storage**: Amazon S3
 
 ## 주요 기능
