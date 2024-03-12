@@ -68,15 +68,3 @@ Spring Boot API + Vue.Js SPA
     ├─static : vue.js build result
     └─templates
 ```
-## Preview
-|메인 페이지|목록형 게시판|
-|:---:|:---:|
-|<img src='https://github.com/kinggora/portal/assets/61868949/93d48958-9c85-40b3-8f6c-60968b830e1f'>|<img src='https://github.com/kinggora/portal/assets/61868949/7703d29e-a4cd-4556-903a-cc350f6cc0b0'>|
-
-|갤러리형 게시판|Q&A형 게시판|
-|:---:|:---:|
-|<img src='https://github.com/kinggora/portal/assets/61868949/d484fb86-f6dd-4b1e-a781-cc010ebb9fa5'>|<img src='https://github.com/kinggora/portal/assets/61868949/da86d3d8-9ef1-49c2-a9fb-8cd6e5408723'>|
-
-
-
-
