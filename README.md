@@ -2,12 +2,13 @@
 Spring Boot API + Vue.Js SPA
 
 ## 개발 환경
-`Java 11` `JavaScript`
-- **IDE**: IntelliJ IDEA 2022.3.2 (Ultimate)
-- **Framework**: SpringBoot(2.x), Vue.js 3
-- **Database**: MariaDB
-- **SQL Mapper**: MyBatis
-- **Storage**: Amazon S3
+· **Backend**: Java 11, SpringBoot(2.x), Spring Security 6
+· **Frontend**: JavaScript, HTML5, CSS3, Vue.js 3, Vuetify
+· **Test**: Postman, JUnit5
+· **Database**: MariaDB, MyBatis
+· **Storage**: Amazon S3
+· **Library**: JJWT, Tika 
+
 
 ## 주요 기능
 ### Auth
@@ -28,6 +29,7 @@ Spring Boot API + Vue.Js SPA
 - 게시판 형태: 목록형, 갤러리형, Q&A형
 - 검색: 게시 일자(from, to), 카테고리, 검색어
 - 대댓글: max depth 5
+- 파일 업로드 유효성 검증
 
 ### Account
 - 로그인/회원가입, 회원정보 수정, 작성 게시글/댓글 관리, 회원 탈퇴
