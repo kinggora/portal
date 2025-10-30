@@ -153,4 +153,73 @@ Spring Boot API + Vue.Js SPA
     </tr>
 </table>
 
-  
+### 게시글 작성/수정
+- 비밀글 허용 게시판의 경우, 비밀글 여부 표시
+- 사진, 파일 첨부 가능
+<table>
+    <tr>
+        <td><img width="1857" height="887" alt="Image" src="https://github.com/user-attachments/assets/48c12c2d-8a9c-47d7-8db0-971c0fd53e90" /></td>
+        <td><img width="1857" height="887" alt="Image" src="https://github.com/user-attachments/assets/41146ea2-b59b-4fa6-8e10-c6ce5c1f28c5" /></td>
+    </tr>
+    <tr>
+        <td>자유게시판 게시글 작성</td>
+        <td>Q&A 게시판 게시글 작성(비밀글)</td>
+    </tr>
+</table>
+
+### 게시글 상세
+- 목록 버튼 클릭 시 이전에 접근했던 목록 페이지로 이동
+- 로그인 이용자만 댓글 입력, 첨부파일 다운로드 가능
+- 비밀글은 작성자, 관리자만 조회 가능
+- 관리자 권한이 있는 경우, Q&A 게시글 답변 작성 버튼 표시
+<table>
+    <tr>
+        <td><img width="1857" height="887" alt="Image" src="https://github.com/user-attachments/assets/d1614c42-1913-4a7f-943c-d6ba93172114" /></td>
+        <td><img width="1857" height="887" alt="Image" src="https://github.com/user-attachments/assets/644cb180-7c33-4444-872b-6d7b57450463" /></td>
+    </tr>
+    <tr>
+        <td>일반 게시글(로그인 상태 - 댓글 작성 가능)</td>
+        <td>일반 게시글(미로그인 상태 - 댓글 작성 불가)</td>
+    </tr>
+    <tr>
+        <td><img width="1857" height="887" alt="Image" src="https://github.com/user-attachments/assets/1c49c8fc-6427-4b37-9898-4ba9b00c3dec" /></td>
+        <td><img width="1857" height="887" alt="Image" src="https://github.com/user-attachments/assets/f104e942-6f7d-4040-90d3-710fdfc1e7dd" /></td>
+        <td><img width="1857" height="887" alt="Image" src="https://github.com/user-attachments/assets/3e7eeb4e-32f2-4990-a628-a80c6445cf03" /></td>
+    </tr>
+    <tr>
+        <td>Q&A 게시글 - 미답변</td>
+        <td>Q&A 게시글 - 답변 작성</td>
+        <td>Q&A 게시글 - 답변 완료</td>
+    </tr>
+</table>
+
+### 댓글 목록
+- 계층형 댓글 구조
+    - 등록: depth가 0인 댓글을 root 댓글이라고 할 때, root의 하위 댓글 그룹에 대해 다음과 같은 순서로 정렬
+        - 자식 댓글의 depth는 부모의 depth + 1
+        - 자식 댓글은 부모의 바로 하위에 위치
+    - 삭제: 자식 댓글 유무에 따라 다르게 처리
+        - 자식 댓글이 있는 경우: 숨김 처리 (“삭제된 댓글입니다.”)
+        - 자식 댓글이 없는 경우: 조상 중 숨김 처리된 댓글이 있는지 재귀적으로 확인하고, 있다면 함께 삭제
+<table>
+    <tr>
+        <td rowspan="5"><img width="1857" height="887" alt="Image" src="https://github.com/user-attachments/assets/45613e1f-9246-4d9d-b966-6b815e38f914" /></td>
+        <td><img width="1857" height="887" alt="Image" src="https://github.com/user-attachments/assets/ed641d7d-643b-45dd-80e9-b586bf0b7b05" /></td>
+    </tr>
+    <tr>
+        <td>댓글 삭제1 - 하위 댓글 메뉴</td>
+    </tr>
+    <tr>
+        <td><img width="1857" height="887" alt="Image" src="https://github.com/user-attachments/assets/2d1d5722-1d78-4118-961e-a3c872b09b05" /></td>
+    </tr>
+    <tr>
+        <td>댓글 삭제2 - 하위 댓글 삭제 실행</td>
+    </tr>
+    <tr>
+        <td><img width="1857" height="887" alt="Image" src="https://github.com/user-attachments/assets/e7d42070-d2ef-4efe-a9dd-7b24c7e4a999" /></td>
+    </tr>
+    <tr>
+        <td>댓글 목록</td>
+        <td>댓글 수정</td>
+    </tr>
+</table>
