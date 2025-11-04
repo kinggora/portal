@@ -1,20 +1,23 @@
-# 다중 게시판 사이트
-Spring Boot API + Vue.Js SPA
+# Portal
+**Spring Boot Rest API + Vue.Js SPA**
+
+게시판 별 접근 권한을 동적으로 적용하는 다중 게시판 입니다.
+
+<img width="1000" alt="Image" src="https://github.com/kinggora/portal/assets/61868949/93d48958-9c85-40b3-8f6c-60968b830e1f" />
 
 ## 개발 환경
-· **Backend**: Java 11, SpringBoot(2.x), Spring Security 6
-· **Frontend**: JavaScript, HTML5, CSS3, Vue.js 3, Vuetify
-· **Test**: Postman, JUnit5
-· **Database**: MariaDB, MyBatis
-· **Storage**: Amazon S3
-· **Library**: JJWT, Tika 
-
+- **Backend**: Java 11, SpringBoot(2.x), Spring Security 6
+- **Frontend**: JavaScript, HTML5, CSS3, Vue.js 3, Vuetify
+- **Test**: Postman, JUnit5
+- **Database**: MariaDB, MyBatis
+- **Storage**: Amazon S3
+- **Library**: JJWT, Tika 
 
 ## 주요 기능
 ### Auth
 - Spring Security 필터 인증/인가, 예외 처리
-- 로그인 시 JWT 발급하여 로그인 유지
-- 게시판마다 다른 권한 인가 처리 (LIST, READ, WRITE, REPLY, COMMENT 등)
+- 로그인 시 JWT 발급하여 인증
+- 게시판별 권한 정책에 따라 인가 처리
 
 ||LIST|READ|WRITE|REPLY-WRITE|REPLY-READ|...|
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -29,10 +32,13 @@ Spring Boot API + Vue.Js SPA
 - 게시판 형태: 목록형, 갤러리형, Q&A형
 - 검색: 게시 일자(from, to), 카테고리, 검색어
 - 대댓글: max depth 5
-- 파일 업로드 유효성 검증
+- 파일 유효성 검증, 업로드/다운로드 권한 인가
 
 ### Account
 - 로그인/회원가입, 회원정보 수정, 작성 게시글/댓글 관리, 회원 탈퇴
+
+## ERD
+<img width="1730" height="812" alt="Image" src="https://github.com/user-attachments/assets/6df301bb-47ff-4139-b9d4-11f97fde990d" />
 
 ## 프로젝트 구조
 ```bash
