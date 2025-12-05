@@ -10,7 +10,7 @@
 - **Frontend**: JavaScript, HTML5, CSS3, Vue.js 3, Vuetify
 - **Test**: Postman, JUnit5
 - **Database**: MariaDB, MyBatis
-- **Storage**: Amazon S3
+- **Storage/CDN**: Amazon S3, Amazon CloudFront
 - **Library**: JJWT, Tika 
 
 ## 주요 기능
